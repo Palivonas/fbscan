@@ -54,3 +54,4 @@ docs/_build/
 target/
 flask
 *.pyc
+.DS_Store
