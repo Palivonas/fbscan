@@ -1,13 +1,16 @@
 import os
-from flask import Flask
-import sys
+from flask import Flask, request, jsonify
+import json
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-	return str(sys.version)
+	return 'go to /fetch'
 
-@app.route('/bybis')
-def bybis():
-	return str(sys.version)
+@app.route('/fetch', methods = ['GET', 'POST'])
+def fetch():
+	return jsonify(request.args)
+
+if __name__ == '__main__':
+	app.run(debug = True)
