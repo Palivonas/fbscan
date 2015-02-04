@@ -44,17 +44,17 @@ class GroupAnalyse:
             self.error = True
             self.error_message += '\nThe fetched data sucks'
             return False
-        if all_comments:
-            for i, post in enumerate(self.data['data']):
-                # Make sure this post has comments
-                if 'comments' in post:
-                    has_more = 'next' in post['comments']['paging']
+        for i, post in enumerate(self.data['data']):
+            # Make sure this post has comments or likes
+            for reaction in ['likes', 'comments']:
+                if reaction in post:
+                    has_more = 'next' in post[reaction]['paging']
                     while has_more:
-                        more_comments = self.fetch(post['comments']['paging']['next'])
-                        self.data['data'][i]['comments']['data'].extend(more_comments['data'])
+                        more_comments = self.fetch(post[reaction]['paging']['next'])
+                        self.data['data'][i][reaction]['data'].extend(more_comments['data'])
                         # Stop if there isn`t a new next link
                         if 'next' in more_comments['paging']:
-                            post['comments']['paging']['next'] = more_comments['paging']['next']
+                            post[reaction]['paging']['next'] = more_comments['paging']['next']
                         else:
                             has_more = False
 
@@ -189,5 +189,6 @@ def run(group_id='', params={}, ignore_cache=False):
         for post in ga.most_liked():
             output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(post['like_count'], post['id'], post['id'])
         output += '</ul>'
+        output += 'bussiest hours'
 
     return '<pre>'+output+'</pre>'
