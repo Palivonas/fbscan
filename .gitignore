@@ -55,3 +55,5 @@ target/
 flask
 *.pyc
 .DS_Store
+
+.idea/
