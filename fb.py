@@ -6,87 +6,157 @@ import re
 import collections
 from flask import jsonify, flash, render_template
 
+class FbscanError(Exception):
+    def __init__(self, value, dump=None):
+        self.value = value
+        self.dump = dump
+    def __str__(self):
+        text = repr(self.value)
+        # if dump is not None:
+            # text += "\n" + repr(self.dump)
+        return text
 
-class GroupAnalyse:
-    """
-    Object meant for analysis of Facebook groups' content
-    data: dict: for storing Facebook's response
-    access_token: str: access token obtained from Facebook
-    graph_url: str: base url for Graph API calls
-    """
+class FbScan:
 
-    def __init__(self):
+    def __init__(self, group_id, params=None, cache_folder='fb_cache'):
         """
         Sets up variables
         :return: None
         """
+        self.group_id = group_id
+        if params is None:
+            params={}
+        self.params = params
+        self.cache_folder = cache_folder
         self.data = {}
+        self.members = {}
         self.graph_url = 'https://graph.facebook.com/v2.2/'
-        self.error = False
-        self.error_message = ''
 
-    def read(self, path: str, params={}, all_comments=True, all_likes=True):
-        """
-        Reads posts from given path and stores them into self.data
-        :param path: Graph node ID
-        :param params: Graph API parameters as str or dict; For example, limit or since
-        :param all_comments: fetch full comments' list if needed
-        :return: None
-        """
-        url = self.graph_url + path + '?'
-        # Parse parameters into a str if they`re in a dict and append to url
-        self.error_message += str(jsonify(params))
-        if type(params) is dict:
-            params = urllib.parse.urlencode(params)
-        url += params
-        self.data = self.fetch(url)
-        if self.data is None or 'data' not in self.data:
-            self.error = True
-            self.error_message += '\nThe fetched data sucks'
-            return False
-        for i, post in enumerate(self.data['data']):
+    @property
+    def cache_file(self):
+        cache_id = self.group_id
+        return os.path.join(self.cache_folder, cache_id + '.json')
+
+    def load(self, ignore_cache=False):
+        loaded = False
+        if not ignore_cache and os.path.exists(self.cache_file):
+            cache_file = open(self.cache_file, 'r')
+            cache_content = cache_file.read()
+            cache_file.close()
+            cached = json.loads(cache_content)
+            self.data = cached['data']
+            self.members = cached['members']
+            loaded = True
+        if not loaded:
+            self.data = self.fetch()['data']
+            self.fetch_paged()
+            self.members = self.fetch_members()['data']
+            cached = {
+                'data' : self.data,
+                'members' : self.members
+            }
+            cache_file = open(self.cache_file, 'w')
+            cache_file.write(json.dumps(cached))
+            cache_file.close()
+        self.basic_count()
+
+    def fetch(self, url=None, paged=False):
+        raise FbscanError("ėė")
+        if url is None:
+            url = self.graph_url + self.group_id + '/feed?' + urllib.parse.urlencode(self.params)
+        self.url_fetched = url
+        try:
+            response = urllib.request.urlopen(url).read().decode()
+            content = json.loads(response)
+            second = False
+            while (paged or not second) and 'next' in content['paging']:
+                second = True
+                next_url = content['paging']['next']
+                del content['paging']['next']
+                response = urllib.request.urlopen(next_url).read().decode()
+                more = json.loads(response)
+                content['data'].extend(more['data'])
+                if 'next' in more['paging']:
+                    content['paging']['next'] = more['paging']['next']
+            return content
+        except KeyError:
+            raise FbscanError('"data" not in response')
+        except urllib.error.HTTPError as e:
+            response = e.read().decode()
+            message = json.loads(response)['error']['message']
+            raise FbscanError(message)
+
+    def fetch_paged(self):
+        for i, post in enumerate(self.data):
             # Make sure this post has comments or likes
             for reaction in ['likes', 'comments']:
                 if reaction in post:
                     has_more = 'next' in post[reaction]['paging']
                     while has_more:
-                        more_comments = self.fetch(post[reaction]['paging']['next'])
-                        self.data['data'][i][reaction]['data'].extend(more_comments['data'])
+                        url = post[reaction]['paging']['next'] + '&limit=200'
+                        more_comments = self.fetch(url)
+                        self.data[i][reaction]['data'].extend(more_comments['data'])
                         # Stop if there isn`t a new next link
                         if 'next' in more_comments['paging']:
                             post[reaction]['paging']['next'] = more_comments['paging']['next']
                         else:
                             has_more = False
 
+    def basic_count(self):
+        for post in self.data:
+            # Make sure this post has comments or likes
+            for reaction in ['likes', 'comments']:
+                count = 0
+                if reaction in post:
+                    count = len(post[reaction]['data'])
+                post[reaction[:-1] + '_count'] = count
+
+        for member in self.members:
+            member['post_count'] = 0
+            member['like_count'] = 0
+            member['comment_count'] = 0
+            for post in self.data:
+                if post['from']['id'] == member['id']:
+                    member['post_count'] += 1
+                if 'likes' in post:
+                    for like in post['likes']['data']:
+                        if like['id'] == member['id']:
+                            member['like_count'] += 1
+                if 'comments' in post:
+                    for comment in post['comments']['data']:
+                        if comment['from']['id'] == member['id']:
+                            member['comment_count'] += 1
+
+    def fetch_members(self):
+        url = self.graph_url + self.group_id + '/members?limit=9999999&access_token=' + self.params['access_token']
+        return self.fetch(url, True)
+
+    def top_commenters(self, count=5):
+        sorted_members = sorted(self.members, key=lambda member: member['comment_count'], reverse=True)
+        return sorted_members[:count]
+
+    @property
+    def member_count(self):
+        return len(self.members)
+    
+ 
     def filter(self, params):
         pass
 
-    def fetch(self, url):
-        self.fetched_url = url
-        try:
-            response = urllib.request.urlopen(url)
-            return json.loads(response.read().decode())
-        except urllib.error.URLError:
-            self.error = True
-            self.error_message += '\nCould not connect to fb'
-            self.error_message += '\n' + url
-        except urllib.error.HTTPError as error:
-            self.error = True
-            try:
-                data = json.loads(error.read().decode())
-                self.error_message += data['error']['message']
-            except (KeyError, ValueError):
-                self.error_message += '\nRequest failed, error {} {}'.format(error.code, error.msg)
-
-    def top_words(self, count=5, scan_posts=True, scan_comments=True, exclude_common=True):
+    def top_words(self, count=5, one_per_message=True, scan_posts=True, scan_comments=True, exclude_common=True):
         texts = []
-        for post in self.data['data']:
+        for post in self.data:
             if scan_posts and 'message' in post and len(post['message'].strip()) > 3:
                 texts.append(post['message'])
             if scan_comments and 'comments' in post:
                 texts.extend(comment['message'] for comment in post['comments']['data'] if 'message' in comment)
-        text = ' '.join(texts).lower()
-        words = re.findall("[\w\-'\.]{3,}", text)
+        
+        words = []
+        for text in texts:
+            current_words = re.findall("[\w\-'\.]{3,}", text.lower())
+            if one_per_message:
+                current_words = list(set(current_words))
+            words.extend(current_words)
         if exclude_common:
             file = open('common_words.txt')
             common_words = set(file.read().split())
@@ -94,52 +164,40 @@ class GroupAnalyse:
             words = [w for w in words if w not in common_words]
         return collections.Counter(words).most_common(count)
 
+    @property
     def post_count(self):
-        return len(self.data['data'])
+        return len(self.data)
 
+    @property
     def comment_count(self):
         count = 0
-        for post in self.data['data']:
+        for post in self.data:
             if 'comments' in post:
                 count += len(post['comments']['data'])
         return count
 
-    def count_comments(self):
-        for i, post in enumerate(self.data['data']):
-            if 'comments' in post:
-                self.data['data'][i]['comment_count'] = len(post['comments']['data'])
-            else:
-                self.data['data'][i]['comment_count'] = 0
-
-    def most_commented(self, count=3):
-        self.count_comments()
-        get_comment_count = lambda post: post['comment_count']
-        most = sorted(self.data['data'], key=get_comment_count, reverse=True)
-        return most[:count]
-
-    def count_likes(self):
-        for i, post in enumerate(self.data['data']):
-            if 'likes' in post:
-                self.data['data'][i]['like_count'] = len(post['likes']['data'])
-            else:
-                self.data['data'][i]['like_count'] = 0
-
+    @property
     def like_count(self):
         count = 0
-        for post in self.data['data']:
+        for post in self.data:
             if 'likes' in post:
                 count += len(post['likes']['data'])
         return count
 
+    def most_commented(self, count=3):
+        get_comment_count = lambda post: post['comment_count']
+        most = sorted(self.data, key=get_comment_count, reverse=True)
+        return most[:count]
+
     def most_liked(self, count=3):
-        self.count_likes()
         get_like_count = lambda post: post['like_count']
-        most = sorted(self.data['data'], key=get_like_count, reverse=True)
+        most = sorted(self.data, key=get_like_count, reverse=True)
         return most[:count]
 
 def run(group_id='', params={}, ignore_cache=False):
     if 'ignore_cache' in params:
-        ignore_cache = params['ignore_cache'] == '1'
+        ignore_cache = params['ignore_cache'] == 'on'
+        del params['ignore_cache']
     output = ''
 
     # if 'group_id' == '':
@@ -147,48 +205,37 @@ def run(group_id='', params={}, ignore_cache=False):
     output += json.dumps(params, indent=2)
     success = True
 
-    ga = GroupAnalyse()
-    cache_filename = 'fb_cache/' + group_id + '.txt'
-    if os.path.exists(cache_filename):
-        cache_file = open(cache_filename, 'r')
-        # try:
-        json_txt = cache_file.read()
-        if len(json_txt) > 0:
-            ga.data = json.loads(json_txt)
-        # except:
-        #     pass
-        cache_file.close()
-    if len(ga.data) == 0 or ignore_cache:
-        ga.read(group_id + '/feed', params=params)
-        if not ga.error:
-            cache_file = open(cache_filename, 'w')
-            cache_file.write(json.dumps(ga.data))
-            cache_file.close()
-    if ga.error:
-        output = ga.error_message
-    else:
-        # output += '\n<a href="' + ga.fetch_url + '" target="_blank">graph_url</a>'
-        output += '<ul>'
-        for w in ga.top_words(4):
-            output += '<li>'
-            output += '{:<3d} - {}'.format(w[1], w[0]) + "\n"
-            output += '</li>'
-        output += '</ul><hr />'
-        output += '\n post count = {:}'.format(ga.post_count())
-        output += '\n comment count = {:}'.format(ga.comment_count())
-        output += '\n like count = {:}'.format(ga.like_count())
+    ga = FbScan(group_id, params)
+    ga.load(ignore_cache)
+    # output += '\n<a href="' + ga.fetch_url + '" target="_blank">graph_url</a>'
+    output += '<ul>'
+    for w in ga.top_words(4):
+        output += '<li>'
+        output += '{:<3d} - {}'.format(w[1], w[0]) + "\n"
+        output += '</li>'
+    output += '</ul><hr />'
+    output += '\n post count = {:}'.format(ga.post_count)
+    output += '\n comment count = {:}'.format(ga.comment_count)
+    output += '\n like count = {:}'.format(ga.like_count)
+    output += '\n member count = {:}'.format(ga.member_count)
 
-        output += '\n most commented = '
-        output += '<ul>'
-        for post in ga.most_commented():
-            output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(post['comment_count'], post['id'], post['id'])
-        output += '</ul>'
+    output += '\n most commented = '
+    output += '<ul>'
+    for post in ga.most_commented():
+        output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(post['comment_count'], post['id'], post['id'])
+    output += '</ul>'
 
-        output += '\n most liked = '
-        output += '<ul>'
-        for post in ga.most_liked():
-            output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(post['like_count'], post['id'], post['id'])
-        output += '</ul>'
-        output += 'bussiest hours'
+    output += '\n top commenters = '
+    output += '<ul>'
+    for member in ga.top_commenters():
+        output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(member['comment_count'], member['id'], member['name'])
+    output += '</ul>'
+
+    output += '\n most liked = '
+    output += '<ul>'
+    for post in ga.most_liked():
+        output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(post['like_count'], post['id'], post['id'])
+    output += '</ul>'
+    output += 'bussiest hours'
 
     return '<pre>'+output+'</pre>'
