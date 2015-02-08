@@ -6,7 +6,7 @@ import re
 import collections
 from flask import jsonify, flash, render_template
 
-class FbscanError(Exception):
+class FbScanError(Exception):
     def __init__(self, value, dump=None):
         self.value = value
         self.dump = dump
@@ -61,7 +61,6 @@ class FbScan:
         self.basic_count()
 
     def fetch(self, url=None, paged=False):
-        raise FbscanError("ėė")
         if url is None:
             url = self.graph_url + self.group_id + '/feed?' + urllib.parse.urlencode(self.params)
         self.url_fetched = url
@@ -80,11 +79,11 @@ class FbScan:
                     content['paging']['next'] = more['paging']['next']
             return content
         except KeyError:
-            raise FbscanError('"data" not in response')
+            raise FbScanError('"data" not in response')
         except urllib.error.HTTPError as e:
             response = e.read().decode()
             message = json.loads(response)['error']['message']
-            raise FbscanError(message)
+            raise FbScanError(message)
 
     def fetch_paged(self):
         for i, post in enumerate(self.data):

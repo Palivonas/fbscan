@@ -12,8 +12,9 @@ def index():
 @app.route('/fetch', methods = ['GET', 'POST'])
 def fetch():
 	group_id = request.args['group_id']
-	del request.args['group_id']
-	return fb.run(group_id, singlify(request.args))
+	args = singlify(request.args)
+	del args['group_id']
+	return fb.run(group_id, args)
 
 def singlify(args):
 	splitup = dict(args)
@@ -24,4 +25,4 @@ def singlify(args):
 	return splitup
 
 if __name__ == '__main__':
-	app.run(debug = True)
+	app.run()
