@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, render_template
 import fb
 
 app = Flask(__name__)
+app.debug = True
 
 @app.route('/')
 def index():
@@ -10,7 +11,9 @@ def index():
 
 @app.route('/fetch', methods = ['GET', 'POST'])
 def fetch():
-	return fb.run(request.args['group_id'], singlify(request.args))
+	group_id = request.args['group_id']
+	del request.args['group_id']
+	return fb.run(group_id, singlify(request.args))
 
 def singlify(args):
 	splitup = dict(args)
