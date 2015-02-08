@@ -18,7 +18,7 @@
   </head>
   <body>
       <form method="get" target="frame" action="/fetch">
-      	<input name="group_id" />
+      	<input name="group_id" value="190594157804565" />
       	<input name="access_token">
       	<textarea></textarea>
         <input type="checkbox" name="ignore_cache" />
@@ -32,7 +32,7 @@
       		}
       		args = $('textarea').val();
       		src = $(this).serialize();
-      		$('iframe').attr('src', '/fetch?' + args.replace(/\n/g, '&') + '&' + src).contents().find('body').text('');
+      		$('iframe').attr('src', '/fetch?' + args.replace(/\n/g, '&') + '&' + src).contents().find('body').text('loading');
       	})
       </script>
   </body>
