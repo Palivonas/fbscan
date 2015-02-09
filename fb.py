@@ -55,7 +55,7 @@ class FbScan:
                 'data' : self.data,
                 'members' : self.members
             }
-            cache_file = open(self.cache_file, 'w')
+            cache_file = open(self.cache_file, 'w+')
             cache_file.write(json.dumps(cached))
             cache_file.close()
         self.basic_count()
