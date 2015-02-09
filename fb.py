@@ -69,9 +69,7 @@ class FbScan:
         try:
             response = urllib.request.urlopen(url).read().decode()
             content = json.loads(response)
-            second = False
-            while (paged or not second) and 'next' in content['paging']:
-                second = True
+            while paged and 'next' in content['paging']:
                 next_url = content['paging']['next']
                 del content['paging']['next']
                 response = urllib.request.urlopen(next_url).read().decode()
