@@ -57,4 +57,4 @@ flask
 .DS_Store
 
 .idea/
-fb_cache/*
+fb_cache/*.*

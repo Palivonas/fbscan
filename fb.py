@@ -28,6 +28,8 @@ class FbScan:
             params={}
         self.params = params
         self.cache_folder = cache_folder
+        if not os.path.exists(cache_folder):
+            os.mkdir(cache_folder)
         self.data = {}
         self.members = {}
         self.graph_url = 'https://graph.facebook.com/v2.2/'
