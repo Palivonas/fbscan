@@ -16,7 +16,14 @@ def fetch():
     group_id = request.args['group_id']
     args = singlify(request.args)
     del args['group_id']
-    return fb.run(group_id, args)
+    if 'spitout' in args:
+        del args['spitout']
+        try:
+            return fb.run(group_id, args)
+        except Exception as e:
+            return repr(e)
+    else:
+        return fb.run(group_id, args)
 
 
 @app.route('/workertest')

@@ -271,6 +271,8 @@ class FbScan:
 
     @property
     def average_post_len(self):
+        if len(self.posts) == 0:
+            return 0
         total_len = 0
         for post in self.posts:
             try:
@@ -281,6 +283,8 @@ class FbScan:
 
     @property
     def average_comment_len(self):
+        if len(self.flat_comments) == 0:
+            return 0
         total_len = 0
         for comment in self.flat_comments:
             try:

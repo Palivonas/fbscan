@@ -58,3 +58,4 @@ flask
 
 .idea/
 fb_cache/*.*
+*.rdb
