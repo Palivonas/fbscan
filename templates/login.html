@@ -1,66 +1,81 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Quandary</title>
-    <meta charset="UTF-8">
-    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-    <link href='https://fonts.googleapis.com/css?family=Muli' rel="stylesheet" type='text/css'>
-    <link href="{{ url_for('static', filename='quandary.css') }}" rel='stylesheet' type='text/css'>
-  </head>
-  <body>
-    <!--<script src="{{ url_for('static', filename='quandary.js') }}"></script>-->
-    <div id="header">
-      <h1 style="float: left">Quandary</h1>
-      <div id="options">
-        <p>options</p>
-      </div>
-    </div>
-    
-    <div id="container" align="center">
-      <h1>Welcome to Quandary!</h1>
-      
-      <!--
-        <fb:login-button scope="public_profile,email,user_groups" onlogin="checkLoginState();">
-        </fb:login-button>
-      
-        <div class="fb-login-button" scope="public_profile,email,user_groups" data-max-rows="1" data-size="xlarge" data-show-faces="false" data-auto-logout-link="false" onlogin="checkLoginState();"></div>
-      -->
-      <div id="token-dialog">
-        <p>Please get your access token from <a href="https://developers.facebook.com/tools/explorer/" target="blank">Facebook Graph Explorer</a>.</p>
-        <p>Your access token needs the user_groups permission.</p>
-        <br>
-        <input type="text" id="token" placeholder="Enter your acces token" />
-        <input type="button" id="token-button" value="Login">
-      </div>
-      
-      <div id="group-list" style="display:none">
-        <h2>Select the group you would like to analyse:</h2>
-        <form id="group-list-form" name="group-list" action="/fetch" method="GET">
-        </form>
-      </div>
-    </div>
-    
-    <script>
-      $("#token-button").click(function(event) {
-          var list = $("#group-list-form");
-          var token = $("#token").val();
-          $.getJSON("https://graph.facebook.com/v2.2/me/groups?fields=name,icon&access_token=" + token, function(response) {
-            list.append("Access token: <input type='text' name='access_token' value='" + token + "'>");
+    <head>
+        <title>Quandary</title>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+        <script src="{{ url_for('static', filename='Chart.min.js') }}"></script>
+        <link href='https://fonts.googleapis.com/css?family=Muli' rel="stylesheet" type='text/css'>
+        <link href="{{ url_for('static', filename='quandary.css') }}" rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <!--<script src="{{ url_for('static', filename='quandary.js') }}"></script>-->
+        <div id="header">
+            <h1><a href="{{url_for('.index')}}">Quandary</a></h1>
+            <ul class="tabs" style="display:none">
+                <li>options</li>
+                <li>Users</li>
+                <li>Averages</li>
+                <li class="selected">General</li>
+            </ul>
+        </div>
+        
+        <div id="container" align="center">
+            <h1>Welcome to Quandary!</h1>
+          
+            <div id="token-dialog">
+                <p>
+                    Please get your access token from <a href="https://developers.facebook.com/tools/explorer/" target="blank">Facebook Graph Explorer</a>.<br>
+                    Your access token needs the user_groups permission.
+                </p>
+                <br>
+                <input type="text" id="token" placeholder="Enter your acces token">
+                <input type="button" id="token-button" value="Login">
+            </div>
             
-            for (var i = 0; i < response.data.length; i++) {
-              var group = response.data[i];
-              var option = "<div class='group'><img src='" + group.icon + "'><input type='radio' name='group_id' value='" + group.id + "'><p>" + group.name + "</p></div>";     
-              list.append(option);
+            <div id="group-list" style="display:none">
+                <p>Select the group you would like to analyse:</p>
+                <form id="group-list-form" name="group-list"></form>
+            </div>
+        </div>
+        
+        <script>
+            Chart.defaults.global.animation = false;
+            
+            $("#token-button").click(function(event) {
+                var list = $("#group-list-form");
+                var token = $("#token").val();
+                
+                // Gets the list of groups from Facebook
+                $.getJSON("https://graph.facebook.com/v2.2/me/groups?fields=name,icon&access_token=" + token, function(response) {
+                    for (var i = 0; i < response.data.length; i++) {
+                        var group = response.data[i];
+                        var option = "<div class='group'><img src='" + group.icon + "'><input type='radio' name='group_id' value='" + group.id + "'><p>" + group.name + "</p></div>";     
+                        list.append(option);
+                    }
+                    
+                    list.append("Access token: <input type='text' style='margin: 10px 10px 0px 0px' name='access_token' value='" + token + "'>");
+                    list.append("<input type='button' id='go' onclick='sendGroupData()' value='Go!' style='float:right; clear:both; margin-top:10px'>");
+                    
+                    $("#token-dialog").fadeOut(function() {
+                        $("#token-dialog").remove();
+                        $("#group-list").fadeIn();
+                    });
+                });
+            });
+            
+            function sendGroupData() {
+                $.get("/fetch?" + $("#group-list-form").serialize(), function(response) {
+                    page = $("#container");
+                    page.fadeOut(function() {
+                        page.empty();
+                        page.append(response);
+                        
+                        page.fadeIn();
+                        $(".tabs").fadeIn();
+                    });
+                });
             }
-            
-            list.append("<input type='submit' value='submit' style='float:right; margin-top:10px'>");
-            
-            $("#token-dialog").remove();
-            $("#group-list").show();
-          });
-      });
-      
-    </script>
-    
-  </body>
+        </script>
+    </body>
 </html>

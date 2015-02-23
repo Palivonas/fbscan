@@ -1,28 +1,47 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Quandary</title>
-        <meta charset="UTF-8">
-        <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-        <link href='https://fonts.googleapis.com/css?family=Muli' rel="stylesheet" type='text/css'>
-        <link href="{{ url_for('static', filename='quandary.css') }}" rel='stylesheet' type='text/css'>
-    </head>
-    <body>
-        <script src="{{ url_for('static', filename='quandary.js') }}"></script>
-        <div id="header">
-        <h1 style="float: left">Quandary</h1>
-        <div id="options">
-            <p>options</p>
-        </div>
-    </div>
-    
-    <div id="container" align="center">
-        <ul>
+<div id="numbers">
+    <h2>Factoids</h2>
+    <p><b>{{stats.member_count}}</b> Members</p>
+    <p><b>{{stats.post_count}}</b> Posts</p>
+    <p><b>{{stats.comment_count}}</b> Comments</p>
+    <p><b>{{stats.like_count}}</b> Likes</p>
+</div>
+
+<div id="words-graph-container">
+    <h2>Most common words:</h2>
+    <canvas id="words" width="400" height="300"></canvas>
+</div>
+
+<script>
+    var labels = [
         {% for word in stats.top_words(4) %}
-            <li>{{ word[0] }}</li>
+            "{{ word[0][1:-1].capitalize() }}",
         {% endfor %}
-        </ul>
-    </div>
-  
-    </body>
-</html>
+    ]
+    
+    var occurrences = [
+        {% for word in stats.top_words(4) %}
+            {{word[1]}},
+        {% endfor %}
+    ]
+    
+    var data = {
+        labels: labels,
+        datasets: [{
+            label: "My First dataset",
+            fillColor: "#3b5998",
+            strokeColor: "#304060",
+            highlightFill: "#304060",
+            highlightStroke: "#304060",
+            data: occurrences
+            
+        }]
+    }
+    
+    var ctx = $("#words").get(0).getContext("2d");
+    var words_chart = new Chart(ctx).Bar(data);
+    
+    $(".tabs").children().click(function() {
+        $(".selected").removeClass("selected");
+        $(this).addClass("selected");
+    });
+</script>

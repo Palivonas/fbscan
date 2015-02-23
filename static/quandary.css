@@ -5,8 +5,8 @@ body {
 }
 
 h2 {
-    font-weight: normal;
-    font-size: 20px;
+    margin: 0px;
+    font-size: 32px;
 }
 
 #header {
@@ -15,34 +15,56 @@ h2 {
     margin: 0px;
 }
 
+#header a {
+    text-decoration: none;
+    color: inherit;
+}
+
 #header h1 {
     margin: 10px;
     font-size: 32px;
     color: #FFFFFF;
+    float: left;
 }
 
-#options {
+.tabs {
+    list-style: none;
+    margin: 0px;
+}
+
+.tabs li {
     height: 30px;
     float: right;
     padding: 15px;
     margin: 0px;
-    color: #FFFFFF;
-}
-
-#options p {
+    color: #FFF;
     margin:0px;
-    padding: 0px;
     font-weight: bold;
     font-size: 24px;
 }
 
-#options:hover {
+.tabs li:hover {
     background-color: #304060;
     cursor: pointer;
 }
 
+.selected {
+    border-radius: 0px 0px 0px 0px;
+    background-color: #FFF;
+    color: #3b5998 !important;
+}
+
+.selected:hover {
+    background-color: #FFF !important;
+    cursor: pointer;
+}
+
+#container {
+    margin: 20px;
+}
+
 #container h1 {
-    font-size: 48px;
+    font-size: 48px;    
 }
 
 #group-list {
@@ -51,15 +73,15 @@ h2 {
 }
 
 .group {
-    background-color: rgb(204, 204, 204);
+    background-color: #DDD;
     padding: 5px;
     margin: 0px;
-    border: 1px solid black;
+    border: 1px solid #666;
     border-top: none;
 }
 
 .group:nth-of-type(1) {
-    border-top: 1px solid black;
+    border-top: 1px solid #666;
 }
 
 .group p {
@@ -77,4 +99,17 @@ h2 {
     float:left;
     margin: 0px;
     margin-right: 5px;
+}
+
+#numbers {
+    float: left;
+    clear: left;
+    font-size: 32px;
+    text-align: left;
+    margin-right: 100px;
+}
+
+#words-graph-container {
+    width: 500px;
+    float: left;
 }
