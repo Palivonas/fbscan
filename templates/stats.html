@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Quandary</title>
+        <meta charset="UTF-8">
+        <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+        <link href='https://fonts.googleapis.com/css?family=Muli' rel="stylesheet" type='text/css'>
+        <link href="{{ url_for('static', filename='quandary.css') }}" rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <script src="{{ url_for('static', filename='quandary.js') }}"></script>
+        <div id="header">
+        <h1 style="float: left">Quandary</h1>
+        <div id="options">
+            <p>options</p>
+        </div>
+    </div>
+    
+    <div id="container" align="center">
+        <ul>
+        {% for word in stats.top_words(4) %}
+            <li>{{ word[0] }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+  
+    </body>
+</html>

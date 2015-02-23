@@ -7,7 +7,8 @@ app.debug = True
 
 
 @app.route('/')
-def index():
+def index(): 
+    #return render_template("login.html")
     return render_template('debug.html')
 
 
@@ -16,13 +17,23 @@ def fetch():
     group_id = request.args['group_id']
     args = singlify(request.args)
     del args['group_id']
+    
+    if 'ignore_cache' in args:
+        ignore_cache = args['ignore_cache'] == 'on'
+        del args['ignore_cache']
+    else : ignore_cache = False;
+    stats = fb.FbScan(group_id, args)
+    stats.load(ignore_cache)
+    
     if 'spitout' in args:
         del args['spitout']
         try:
+            #return render_template('stats.html', stats=stats, fb=fb)
             return fb.run(group_id, args)
         except Exception as e:
             return repr(e)
     else:
+        #return render_template('stats.html', stats=stats, fb=fb)
         return fb.run(group_id, args)
 
 

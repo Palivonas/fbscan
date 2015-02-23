@@ -1,0 +1,80 @@
+body {
+    font-family: "Muli", sans-serif;
+    margin: 0px;
+    padding: 0px;
+}
+
+h2 {
+    font-weight: normal;
+    font-size: 20px;
+}
+
+#header {
+    height: 60px;
+    background-color: #3b5998;
+    margin: 0px;
+}
+
+#header h1 {
+    margin: 10px;
+    font-size: 32px;
+    color: #FFFFFF;
+}
+
+#options {
+    height: 30px;
+    float: right;
+    padding: 15px;
+    margin: 0px;
+    color: #FFFFFF;
+}
+
+#options p {
+    margin:0px;
+    padding: 0px;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+#options:hover {
+    background-color: #304060;
+    cursor: pointer;
+}
+
+#container h1 {
+    font-size: 48px;
+}
+
+#group-list {
+    text-align: left;
+    width: 600px;
+}
+
+.group {
+    background-color: rgb(204, 204, 204);
+    padding: 5px;
+    margin: 0px;
+    border: 1px solid black;
+    border-top: none;
+}
+
+.group:nth-of-type(1) {
+    border-top: 1px solid black;
+}
+
+.group p {
+    margin: 0px;
+    margin-left: 30px;
+}
+
+.group img {
+    float: left;
+    margin: 0px;
+    margin-right: 5px;
+}
+
+.group input {
+    float:left;
+    margin: 0px;
+    margin-right: 5px;
+}
