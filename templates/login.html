@@ -9,6 +9,40 @@
         <link href="{{ url_for('static', filename='quandary.css') }}" rel='stylesheet' type='text/css'>
     </head>
     <body>
+        <script>
+            function getFormData() {
+                document.cookie="token="+$("input:text").val();
+                document.cookie="group_id="+$("input:radio:checked").val();
+                
+                var args = $("#group-list-form").serialize()
+                sendGroupData(args)
+            }
+            
+            
+            function sendGroupData(args) {
+                $.get("/fetch?" + args, function(response) {
+                    page = $("#container");
+                    page.fadeOut(function() {
+                        page.empty();
+                        page.append(response);
+                        
+                        page.fadeIn();
+                        $(".tabs").fadeIn();
+                    });
+                });
+            }
+            
+            
+            var cookie_strings = document.cookie.split("; "); 
+            var cookie = {};
+            for (i = 0; i < cookie_strings.length; i++) {
+                cookie[ cookie_strings[i].split("=")[0] ] = cookie_strings[i].split("=")[1];
+            }
+            
+            if (cookie.token && cookie.group_id) {
+                sendGroupData($.param(cookie));
+            }
+        </script>
         <!--<script src="{{ url_for('static', filename='quandary.js') }}"></script>-->
         <div id="header">
             <h1><a href="{{url_for('.index')}}">Quandary</a></h1>
@@ -40,7 +74,8 @@
         </div>
         
         <script>
-            Chart.defaults.global.animation = false;
+            Chart.defaults.global.animation = false;     
+            
             
             $("#token-button").click(function(event) {
                 var list = $("#group-list-form");
@@ -55,7 +90,7 @@
                     }
                     
                     list.append("Access token: <input type='text' style='margin: 10px 10px 0px 0px' name='access_token' value='" + token + "'>");
-                    list.append("<input type='button' id='go' onclick='sendGroupData()' value='Go!' style='float:right; clear:both; margin-top:10px'>");
+                    list.append("<input type='button' id='go' onclick='getFormData()' value='Go!' style='float:right; clear:both; margin-top:10px'>");
                     
                     $("#token-dialog").fadeOut(function() {
                         $("#token-dialog").remove();
@@ -63,19 +98,6 @@
                     });
                 });
             });
-            
-            function sendGroupData() {
-                $.get("/fetch?" + $("#group-list-form").serialize(), function(response) {
-                    page = $("#container");
-                    page.fadeOut(function() {
-                        page.empty();
-                        page.append(response);
-                        
-                        page.fadeIn();
-                        $(".tabs").fadeIn();
-                    });
-                });
-            }
         </script>
     </body>
 </html>

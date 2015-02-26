@@ -112,4 +112,5 @@ h2 {
 #words-graph-container {
     width: 500px;
     float: left;
+    text-align: left;
 }
