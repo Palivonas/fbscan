@@ -1,5 +1,6 @@
 <div id="numbers">
     <h2>Factoids</h2>
+    {% macro  factoid(count, label)%}
     <p><b>{{stats.member_count}}</b> Members</p>
     <p><b>{{stats.post_count}}</b> Posts</p>
     <p><b>{{stats.comment_count}}</b> Comments</p>
@@ -11,7 +12,17 @@
     <canvas id="words" width="400" height="300"></canvas>
 </div>
 
+<div id="activities">
+    {% macro  %}
+    {{ "Percentage of comments: " + ( stats.comment_count * (stats.post_count + stats.comment_count + stats.like_count) / 100.0) |string }}
+</div>
+
 <script>
+    $("#logo").click(function() {
+        document.cookie="group_id=";
+    })
+    
+    
     var labels = [
         {% for word in stats.top_words(4) %}
             "{{ word[0][1:-1].capitalize() }}",
