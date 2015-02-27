@@ -1,39 +1,79 @@
-<div id="numbers">
-    <h2>Factoids</h2>
+<div id="numbers" class="statbox">
+    <h2>Factoids:</h2>
     {% macro  factoid(count, label)%}
-    <p><b>{{stats.member_count}}</b> Members</p>
-    <p><b>{{stats.post_count}}</b> Posts</p>
-    <p><b>{{stats.comment_count}}</b> Comments</p>
-    <p><b>{{stats.like_count}}</b> Likes</p>
+        <p><b>{{count}}</b> {{label}}</p>
+    {% endmacro %}
+    
+    {{factoid(stats.member_count, "Members")}}
+    {{factoid(stats.post_count, "Posts")}}
+    {{factoid(stats.comment_count, "Comments")}}
+    {{factoid(stats.like_count, "Likes")}}
 </div>
 
-<div id="words-graph-container">
+<div id="words-graph-container" class="statbox">
     <h2>Most common words:</h2>
     <canvas id="words" width="400" height="300"></canvas>
 </div>
 
-<div id="activities">
-    {% macro  %}
-    {{ "Percentage of comments: " + ( stats.comment_count * (stats.post_count + stats.comment_count + stats.like_count) / 100.0) |string }}
+<div id="activities-container" class="statbox">
+    <h2>Type of activity:</h2>
+    <div class="legend">
+        {% macro average(stat, label, color) %}
+            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ "Percentage of " + label + ": " + ( stat * 100 // (stats.post_count + stats.comment_count + stats.like_count))|string + "%" }}</p>
+        {% endmacro %}
+        {{ average(stats.comment_count, "comments", "#46BFBD") }}
+        {{ average(stats.post_count, "posts", "#5F9339") }}
+        {{ average(stats.like_count, "likes", "#FDB45C") }}
+    </div>
+    
+    <canvas id="activities" stlye="float:left" width="250" height="250"></canvas>
 </div>
 
 <script>
     $("#logo").click(function() {
         document.cookie="group_id=";
-    })
+    });
     
     
+    // Activities Chart
+    
+    var data = [
+        {
+            value: {{stats.post_count}},
+            color:"#5F9339",
+            highlight: "#FF5A5E",
+            label: "Posts"
+        },
+        {
+            value: {{stats.comment_count}},
+            color: "#46BFBD",
+            highlight: "#5AD3D1",
+            label: "Comments"
+        },
+        {
+            value: {{stats.like_count}},
+            color: "#FDB45C",
+            highlight: "#FFC870",
+            label: "Likes"
+        }
+    ]
+    
+    var context = $("#activities").get(0).getContext("2d");
+    var activities_chart = new Chart(context).Pie(data);
+    
+    
+    // Words Chart
     var labels = [
         {% for word in stats.top_words(4) %}
             "{{ word[0][1:-1].capitalize() }}",
         {% endfor %}
-    ]
+    ];
     
     var occurrences = [
         {% for word in stats.top_words(4) %}
             {{word[1]}},
         {% endfor %}
-    ]
+    ];
     
     var data = {
         labels: labels,
@@ -48,8 +88,8 @@
         }]
     }
     
-    var ctx = $("#words").get(0).getContext("2d");
-    var words_chart = new Chart(ctx).Bar(data);
+    var context = $("#words").get(0).getContext("2d");
+    var words_chart = new Chart(context).Bar(data);
     
     $(".tabs").children().click(function() {
         $(".selected").removeClass("selected");
