@@ -1,5 +1,6 @@
 import urllib.parse
 import urllib.request
+import urllib.error
 import json
 import os
 import re
@@ -79,16 +80,17 @@ class FbScan:
         for member in self.members:
             self.members_dict[member['id']] = member
 
-    def fetch(self, url=None, paged=False, inside=None):
+    def fetch(self, url=None, paged=False, container=None):
         if url is None:
             url = self.graph_url + self.group_id + '/feed?' + urllib.parse.urlencode(self.params)
+        print(url)
         self.url_fetched = url
         try:
             response = urllib.request.urlopen(url).read().decode()
             self.request_count += 1
             content = json.loads(response)
-            if inside is not None:
-                content = content[inside]
+            if container is not None:
+                content = content[container]
             while paged and 'next' in content['paging']:
                 next_url = content['paging']['next']
                 del content['paging']['next']
