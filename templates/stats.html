@@ -19,7 +19,7 @@
     <h2>Type of activity:</h2>
     <div class="legend">
         {% macro average(stat, label, color) %}
-            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ "Percentage of " + label + ": " + ( stat * 100 // (stats.post_count + stats.comment_count + stats.like_count))|string + "%" }}</p>
+            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ "Percentage of " + label + ": " + ( stat * 100 / (stats.post_count + stats.comment_count + stats.like_count))|int|string + "%" }}</p>
         {% endmacro %}
         {{ average(stats.comment_count, "comments", "#46BFBD") }}
         {{ average(stats.post_count, "posts", "#5F9339") }}
