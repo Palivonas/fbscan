@@ -47,7 +47,7 @@
 </div>
 
 <script>
-    data = {
+    var data = {
         labels: [
             {% for hour in stats.busiest_hours().keys() %}
                 "{{hour}}",
@@ -67,8 +67,8 @@
                 {% endfor %}
             ]}
         ]
-    }
+    };
     
     var context = $("#hours").get(0).getContext("2d");
-    var busy = new Chart(context).Line(data);
+    new Chart(context).Line(data);
 </script>

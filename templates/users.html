@@ -41,7 +41,6 @@
 </div>
 
 <script>
-// Activities Chart
     var data = [
         {
             value: {{stats.inactive_members()|length}},
@@ -61,8 +60,8 @@
             highlight: "#FFC870",
             label: "Active"
         }
-    ]
+    ];
     
     var context = $("#users-graph").get(0).getContext("2d");
-    var activities_chart = new Chart(context).Pie(data);
+    new Chart(context).Pie(data);
 </script>

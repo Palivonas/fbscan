@@ -5,11 +5,12 @@ body {
 }
 
 h2 {
-    text-align: left;
     margin: 0px;
     font-size: 32px;
     margin-bottom: 10px;
 }
+
+/* Menu bar */
 
 #header {
     height: 60px;
@@ -82,7 +83,7 @@ h2 {
 
 #options ul li {
     margin: 0px;
-    padding: 0px;
+    padding: 10px;
     font-size: 18px;
     font-weight: normal;
     color: #000 !important;
@@ -104,8 +105,22 @@ h2 {
     font-size: 48px;    
 }
 
+/* Login */
+
+#login {
+    margin: auto;
+}
+
+#login h1 {
+    text-align: center;
+}
+
+#token-dialog {
+    text-align: center;
+}
+
 #group-list {
-    text-align: left;
+    margin: auto;
     width: 600px;
 }
 
@@ -138,6 +153,8 @@ h2 {
     margin-right: 5px;
 }
 
+/* General tab */
+
 #numbers {
     float: left;
     clear: left;
@@ -161,14 +178,12 @@ h2 {
 }
 
 .statbox {
-    text-align: left;
     margin-right: 10%;
     margin-bottom: 50px;
 }
 
 .legend {
     float: right;
-    text-align: left;
 }
 
 .legend p {
@@ -187,6 +202,7 @@ h2 {
 }
 
 /*Averages page*/
+
 #most-commented {
     float: left;
 }
@@ -198,7 +214,6 @@ h2 {
 #length {
     width: 500px;
     float:left;
-    text-align: left;
     margin-bottom: 50px;
     border-left: 4px solid #3b5998;
     padding-left: 10px;
@@ -214,9 +229,17 @@ h2 {
     margin: 0px;
 }
 
+#busiest-hours {
+    float: right;
+}
+
+#top-posts {
+    width: 100%;
+    float: left;
+}
+
 .top-ten {
     width: 700px;
-    text-align: left;
     float: left;
     clear: both;
 }
@@ -252,6 +275,8 @@ h2 {
     width: 20px;
 }
 
+/* Users tab */
+
 .top-users {
     height: 320px;
     width: 300px;
@@ -267,14 +292,5 @@ h2 {
 }
 
 #participation-container canvas {
-    float: left;
-}
-
-#busiest-hours {
-    float: right;
-}
-
-#top-posts {
-    width: 100%;
     float: left;
 }

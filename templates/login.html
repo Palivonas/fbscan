@@ -5,53 +5,21 @@
         <meta charset="UTF-8">
         <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
         <script src="{{ url_for('static', filename='Chart.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='quandary.js') }}"></script>
         <link href='https://fonts.googleapis.com/css?family=Muli' rel="stylesheet" type='text/css'>
         <link href="{{ url_for('static', filename='quandary.css') }}" rel='stylesheet' type='text/css'>
-        <script>
-            function getFormData() {
-                document.cookie="token="+$("input:text").val();
-                document.cookie="group_id="+$("input:radio:checked").val();
-                
-                var args = $("#group-list-form").serialize();
-                displayTab(args, "general");
-            }
-            
-            
-            function getCookieData() {
-                var cookie_strings = document.cookie.split("; "); 
-                var cookie = {};
-                for (i = 0; i < cookie_strings.length; i++) {
-                    cookie[ cookie_strings[i].split("=")[0] ] = cookie_strings[i].split("=")[1];
-                }
-                return cookie;
-            }
-            
-            
-            function displayTab(args, tab, no_fade) {
-                $.get("/"+ tab +"?" + args, function(response) {
-                    var page = $("#container");
-                    
-                    if (!no_fade) {
-                        page.fadeOut(function() {
-                            page.empty();
-                            page.append(response);
-                            
-                            page.fadeIn();
-                            $(".tabs").fadeIn();
-                        });
-                    } else {
-                        page.empty();
-                        page.append(response);
-                        page.show();
-                        $(".tabs").show();
-                    }
-                });
-            }
-            
+        <script>   
+            Chart.defaults.global.animation = false;
             
             var cookie = getCookieData();
+            
             if (cookie.token && cookie.group_id) {
                 displayTab($.param(cookie), "general", true);
+            } else if (cookie.token) {
+                $(document).ready(function() {
+                    $("#token-dialog").remove();
+                    listGroups(cookie.token, true);
+                });   
             }
         </script>
     </head>
@@ -61,8 +29,8 @@
             <ul class="tabs" style="display:none">
                 <li id="options">Options
                     <ul>
-                        <li>Change Access Token</li>
-                        <li>Change Group</li>
+                        <li><a href="{{url_for('.index')}}" onclick="resetToken()">Change Access Token</a></li>
+                        <li><a href="{{url_for('.index')}}" onclick="resetGroup()">Change Group</a></li>
                     </ul>
                 </li>
                 <li id="users">Users</li>
@@ -71,35 +39,35 @@
             </ul>
         </div>
         
-        <div id="container" align="center">
-            <h1>Welcome to Quandary!</h1>
-          
-            <div id="token-dialog">
-                <p>
-                    Please get your access token from <a href="https://developers.facebook.com/tools/explorer/" target="blank">Facebook Graph Explorer</a>.<br>
-                    Your access token needs the user_groups permission.
-                </p>
-                <br>
-                <input type="text" id="token" placeholder="Enter your acces token">
-                <input type="button" id="token-button" value="Login">
-            </div>
-            
-            <div id="group-list" style="display:none">
-                <p>Select the group you would like to analyse:</p>
-                <form id="group-list-form" name="group-list"></form>
+        <div id="container">
+            <div id="login">
+                <h1>Welcome to Quandary!</h1>
+              
+                <div id="token-dialog">
+                    <p>
+                        Please get your access token from <a href="https://developers.facebook.com/tools/explorer/" target="blank">Facebook Graph Explorer</a>.<br>
+                        Your access token needs the user_groups permission.
+                    </p>
+                    <br>
+                    <input type="text" id="token" placeholder="Enter your acces token">
+                    <input type="button" id="token-button" value="Login">
+                </div>
+                
+                <div id="group-list" style="display:none">
+                    <p>Select the group you would like to analyse:</p>
+                    <form id="group-list-form" name="group-list"></form>
+                </div>
             </div>
         </div>
         
         <script>
-            Chart.defaults.global.animation = false;
+            $("#token-button").click(function() {
+                listGroups($("#token").val());
+            });
             
-            
-            function changeTab(tab) {
-                $("ul", "#options").hide();
-                var cookie = getCookieData();
-                displayTab($.param(cookie), tab);
-            }
-            
+            $("#logo").click(function() {
+               resetGroup();
+            });
             
             // Tabs events
             $("#general").click(function() {
@@ -112,6 +80,11 @@
                 changeTab("users");
             });
             
+            $(".tabs").children().click(function() {
+                $(".selected").removeClass("selected");
+                $(this).addClass("selected");
+            });
+            
             // Options menu
             $("#options").click(function() {
                 if ( $("ul", "#options").is(":visible") ) {
@@ -119,29 +92,6 @@
                 } else {
                     $("ul", "#options").show();
                 }
-            });
-            
-            
-            $("#token-button").click(function(event) {
-                var list = $("#group-list-form");
-                var token = $("#token").val();
-                
-                // Gets the list of groups from Facebook
-                $.getJSON("https://graph.facebook.com/v2.2/me/groups?fields=name,icon&access_token=" + token, function(response) {
-                    for (var i = 0; i < response.data.length; i++) {
-                        var group = response.data[i];
-                        var option = "<div class='group'><img src='" + group.icon + "'><input type='radio' name='group_id' value='" + group.id + "'><p>" + group.name + "</p></div>";     
-                        list.append(option);
-                    }
-                    
-                    list.append("Access token: <input type='text' style='margin: 10px 10px 0px 0px' name='access_token' value='" + token + "'>");
-                    list.append("<input type='button' id='go' onclick='getFormData()' value='Go!' style='float:right; clear:both; margin-top:10px'>");
-                    
-                    $("#token-dialog").fadeOut(function() {
-                        $("#token-dialog").remove();
-                        $("#group-list").fadeIn();
-                    });
-                });
             });
         </script>
     </body>

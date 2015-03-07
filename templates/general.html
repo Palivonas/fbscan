@@ -30,11 +30,6 @@
 </div>
 
 <script>
-    $("#logo").click(function() {
-        document.cookie="group_id=";
-    });
-    
-    
     // Activities Chart
     
     var data = [
@@ -56,43 +51,34 @@
             highlight: "#FFC870",
             label: "Likes"
         }
-    ]
+    ];
     
     var context = $("#activities").get(0).getContext("2d");
-    var activities_chart = new Chart(context).Pie(data);
+    new Chart(context).Pie(data);
     
     
     // Words Chart
-    var labels = [
-        {% for word in stats.top_words(4) %}
-            "{{ word[0][1:-1].capitalize() }}",
-        {% endfor %}
-    ];
     
-    var occurrences = [
-        {% for word in stats.top_words(4) %}
-            {{word[1]}},
-        {% endfor %}
-    ];
-    
-    var data = {
-        labels: labels,
+    data = {
+        labels: [
+            {% for word in stats.top_words(4) %}
+                "{{ word[0][1:-1].capitalize() }}",
+            {% endfor %}
+        ],
         datasets: [{
             label: "Most common words",
             fillColor: "#3b5998",
             strokeColor: "#304060",
             highlightFill: "#304060",
             highlightStroke: "#304060",
-            data: occurrences
-            
+            data: [
+                {% for word in stats.top_words(4) %}
+                    {{word[1]}},
+                {% endfor %}
+            ] 
         }]
-    }
+    };
     
-    var context = $("#words").get(0).getContext("2d");
-    var words_chart = new Chart(context).Bar(data);
-    
-    $(".tabs").children().click(function() {
-        $(".selected").removeClass("selected");
-        $(this).addClass("selected");
-    });
+    context = $("#words").get(0).getContext("2d");
+    new Chart(context).Bar(data);
 </script>
