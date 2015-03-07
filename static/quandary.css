@@ -195,18 +195,37 @@ h2 {
     float: right;
 }
 
-.post {
+#length {
+    width: 500px;
+    float:left;
+    text-align: left;
+    margin-bottom: 50px;
+    border-left: 4px solid #3b5998;
+    padding-left: 10px;
+}
+
+#length h2 {
+    float: left;
+}
+
+#length p {
+    float: right;
+    font-size: 32px;
+    margin: 0px;
+}
+
+.top-ten {
     width: 700px;
     text-align: left;
     float: left;
     clear: both;
 }
 
-.post img {
+.top-ten img {
     float: left;
 }
 
-.post p {
+.top-ten p, .top-ten h3 {
     margin: 5px;
     margin-left: 40px;
 }
@@ -218,7 +237,7 @@ h2 {
     text-align: center;
 }
 
-.post-title {
+.top-ten h3 {
     font-size: 18px;
     font-weight: bold;
 }
@@ -231,4 +250,31 @@ h2 {
 
 .comment-count img {
     width: 20px;
+}
+
+.top-users {
+    height: 320px;
+    width: 300px;
+    float:left;
+    padding-left: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3b5998;
+}
+
+#participation-container {
+    width: 600px;
+    float: left;
+}
+
+#participation-container canvas {
+    float: left;
+}
+
+#busiest-hours {
+    float: right;
+}
+
+#top-posts {
+    width: 100%;
+    float: left;
 }
