@@ -1,6 +1,6 @@
 {% macro topTen(post, count, icon) %}
     <div class="top-ten">
-        <div class="comment-count">
+        <div class="count">
             <p>{{ count }}</p>
             <img src="{{ url_for('static', filename=icon) }}" />
         </div>
@@ -9,39 +9,37 @@
     </div>
 {% endmacro %}
 
-<div id="top-posts">
-    <!-- Copyright notice
-    The "comment.png" icon used in this page was designed by Linh Pham Thi Dieu (http://linhpham.me/). It is free to use for any project.
-    It is part of the Miu icon collection, which can be found at http://linhpham.me/miu/
-    -->
-    <div id="most-commented" style="clear:left">
-        <h2>Most commented posts:</h2>
-        {% for post in stats.most_commented() %}
-            {{ topTen(post, post["comment_count"], "comment.png") }}
-        {% endfor %}
-    </div>
-    
-    <!-- Copyright notice
-    The "like.png" icon used in this page was designed by IconsMind (https://www.iconsmind.com/) and released under the Creative Commons Attribution 2.5 Generic license.
-    It is part of the Social Media icon pack, which can be foud at https://www.iconfinder.com/iconsets/social-media-13
-    A copy of the licence can be found at http://creativecommons.org/licenses/by/2.5/legalcode
-    No changes were made to the original icon.
-    -->
-    <div id="most-liked">
-        <h2>Most liked posts:</h2>
-        {% for post in stats.most_liked_posts() %}
-            {{ topTen(post, post["like_count"], "like.png") }}
-        {% endfor %}
-    </div>
+<!-- Copyright notice
+The "comment.png" icon used in this page was designed by Linh Pham Thi Dieu (http://linhpham.me/). It is free to use for any project.
+It is part of the Miu icon collection, which can be found at http://linhpham.me/miu/
+-->
+<div id="most-commented" class="statbox">
+    <h2>Most commented posts</h2>
+    {% for post in stats.most_commented() %}
+        {{ topTen(post, post["comment_count"], "comment.png") }}
+    {% endfor %}
 </div>
 
-<div id="length">
+<!-- Copyright notice
+The "like.png" icon used in this page was designed by IconsMind (https://www.iconsmind.com/) and released under the Creative Commons Attribution 2.5 Generic license.
+It is part of the Social Media icon pack, which can be foud at https://www.iconfinder.com/iconsets/social-media-13
+A copy of the licence can be found at http://creativecommons.org/licenses/by/2.5/legalcode
+No changes were made to the original icon.
+-->
+<div id="most-liked" class="statbox">
+    <h2>Most liked posts</h2>
+    {% for post in stats.most_liked_posts() %}
+        {{ topTen(post, post["like_count"], "like.png") }}
+    {% endfor %}
+</div>
+
+<div id="length" class="statbox">
     <h2>Average post length:</h2><p>{{ stats.average_post_len|int }}</p>
     <br>
     <h2>Average comment length:</h2><p>{{ stats.average_comment_len|int }}</p>
 </div>
 
-<div id="busiest-hours">
+<div id="busiest-hours" class="statbox">
     <h2>Busiest Hours</h2>
     <canvas id="hours" width="1000"></canvas>
 </div>

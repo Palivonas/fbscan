@@ -1,6 +1,6 @@
 {% macro topUsers(name, count, icon) %}
     <div class="top-ten">
-        <div class="comment-count">
+        <div class="count">
             <p>{{ count }}</p>
             <img src="{{ url_for('static', filename=icon) }}" />
         </div>
@@ -8,23 +8,25 @@
     </div>
 {% endmacro %}
 
-<div id="top-posters" class="top-users">
-    <h2>Top posters</h2>
-    {% for user in stats.top_posters() %}
-        {{ topUsers(user.name, user.post_count, "post.png") }}
-    {% endfor %}
-</div>
-<div id="top-commenters" class="top-users">
-    <h2>Top commenters</h2>
-    {% for user in stats.top_posters() %}
-        {{ topUsers(user.name, user.comment_count, "comment.png") }}
-    {% endfor %}
-</div>
-<div id="top-likes" class="top-users">
-    <h2>Top likers</h2>
-    {% for user in stats.top_posters() %}
-        {{ topUsers(user.name, user.like_count, "like.png") }}
-    {% endfor %}
+<div class="statbox">
+    <div id="top-posters" class="top-users">
+        <h2>Top posters</h2>
+        {% for user in stats.top_posters() %}
+            {{ topUsers(user.name, user.post_count, "post.png") }}
+        {% endfor %}
+    </div>
+    <div id="top-commenters" class="top-users">
+        <h2>Top commenters</h2>
+        {% for user in stats.top_posters() %}
+            {{ topUsers(user.name, user.comment_count, "comment.png") }}
+        {% endfor %}
+    </div>
+    <div id="top-likes" class="top-users">
+        <h2>Top likers</h2>
+        {% for user in stats.top_posters() %}
+            {{ topUsers(user.name, user.like_count, "like.png") }}
+        {% endfor %}
+    </div>
 </div>
 
 <div id="participation-container">
@@ -32,11 +34,11 @@
     <canvas id="users-graph" width="250" height="250"></canvas>
     <div class="legend">
         {% macro average(stat, label, color) %}
-            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ label + ": " + ( stat * 100 / (stats.member_count))|int|string + "%" }}</p>
+            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ label + ": " + ( stat * 100 / (stats.member_count))|round|int|string + "%" }}</p>
         {% endmacro %}
-        {{ average((stats.member_count - stats.only_like|length - stats.inactive_members()|length), "Active users", "#FDB45C") }}
-        {{ average(stats.inactive_members()|length, "Inactive users", "#FF5A5E") }}
-        {{ average(stats.only_like|length, "Only liked something", "#46BFBD") }}
+        {{ average((stats.member_count - stats.only_like|length - stats.inactive_members()|length), "Active users", "#5F9339") }}
+        {{ average(stats.inactive_members()|length, "Inactive users", "#E02C2C") }}
+        {{ average(stats.only_like|length, "Only liked something", "#FDB45C") }}
     </div>
 </div>
 
@@ -44,20 +46,20 @@
     var data = [
         {
             value: {{stats.inactive_members()|length}},
-            color:"#FF5A5E",
-            highlight: "#FF5A5E",
+            color:"rgb(224,44,44)",
+            highlight: "rgba(224,44,44,0.8)",
             label: "Inactive"
         },
         {
             value: {{stats.only_like|length}},
-            color: "#46BFBD",
-            highlight: "#5AD3D1",
+            color: "rgb(253,180,92)",
+            highlight: "rgba(253,180,92,0.8)",
             label: "Only liked somthing"
         },
         {
             value: {{stats.member_count - stats.only_like|length - stats.inactive_members()|length}},
-            color: "#FDB45C",
-            highlight: "#FFC870",
+            color: "rgb(95,147,57)",
+            highlight: "rgba(95,147,57,0.8)",
             label: "Active"
         }
     ];

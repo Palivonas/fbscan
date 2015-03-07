@@ -156,8 +156,6 @@ h2 {
 /* General tab */
 
 #numbers {
-    float: left;
-    clear: left;
     font-size: 32px;
 }
 
@@ -169,16 +167,16 @@ h2 {
 
 #words-graph-container {
     width: 500px;
-    float: left;
 }
 
 #activities-container {
     width: 600px;
-    float: left;
+    margin-right: 0px;
 }
 
 .statbox {
-    margin-right: 10%;
+    float: left;
+    margin-right: 200px;
     margin-bottom: 50px;
 }
 
@@ -203,20 +201,12 @@ h2 {
 
 /*Averages page*/
 
-#most-commented {
-    float: left;
-}
-
-#most-liked {
-    float: right;
-}
-
 #length {
     width: 500px;
-    float:left;
     margin-bottom: 50px;
     border-left: 4px solid #3b5998;
     padding-left: 10px;
+    margin-right: 100px;s
 }
 
 #length h2 {
@@ -229,23 +219,10 @@ h2 {
     margin: 0px;
 }
 
-#busiest-hours {
-    float: right;
-}
-
-#top-posts {
+.top-ten {
     width: 100%;
     float: left;
-}
-
-.top-ten {
-    width: 700px;
-    float: left;
     clear: both;
-}
-
-.top-ten img {
-    float: left;
 }
 
 .top-ten p, .top-ten h3 {
@@ -253,34 +230,34 @@ h2 {
     margin-left: 40px;
 }
 
-.comment-count {
+.top-ten h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.count {
     float: left;
     height: 100%;
     padding: 5px;
     text-align: center;
 }
 
-.top-ten h3 {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.comment-count p {
+.count p {
     margin: 0px;
     font-size: 18px;
     font-weight: bold;
 }
 
-.comment-count img {
+.count img {
     width: 20px;
 }
 
 /* Users tab */
 
 .top-users {
-    height: 320px;
+    height: 330px;
     width: 300px;
-    float:left;
+    float: left;
     padding-left: 10px;
     margin-bottom: 20px;
     border-left: 4px solid #3b5998;

@@ -1,5 +1,5 @@
 <div id="numbers" class="statbox">
-    <h2>Factoids:</h2>
+    <h2>Factoids</h2>
     {% macro  factoid(count, label)%}
         <p><b>{{count}}</b> {{label}}</p>
     {% endmacro %}
@@ -11,15 +11,15 @@
 </div>
 
 <div id="words-graph-container" class="statbox">
-    <h2>Most common words:</h2>
+    <h2>Most common words</h2>
     <canvas id="words" width="400" height="300"></canvas>
 </div>
 
 <div id="activities-container" class="statbox">
-    <h2>Type of activity:</h2>
+    <h2>Type of activity</h2>
     <div class="legend">
         {% macro average(stat, label, color) %}
-            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ "Percentage of " + label + ": " + ( stat * 100 / (stats.post_count + stats.comment_count + stats.like_count))|int|string + "%" }}</p>
+            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ "Percentage of " + label + ": " + ( stat * 100 / (stats.post_count + stats.comment_count + stats.like_count))|round|int|string + "%" }}</p>
         {% endmacro %}
         {{ average(stats.comment_count, "comments", "#46BFBD") }}
         {{ average(stats.post_count, "posts", "#5F9339") }}
@@ -35,20 +35,20 @@
     var data = [
         {
             value: {{stats.post_count}},
-            color:"#5F9339",
-            highlight: "#FF5A5E",
+            color: "rgb(95,147,57)",
+            highlight: "rgba(95,147,57,0.8)",
             label: "Posts"
         },
         {
             value: {{stats.comment_count}},
-            color: "#46BFBD",
-            highlight: "#5AD3D1",
+            color: "rgb(70,191,189)",
+            highlight: "rgba(70,191,189,0.8)",
             label: "Comments"
         },
         {
             value: {{stats.like_count}},
-            color: "#FDB45C",
-            highlight: "#FFC870",
+            color: "rgb(253,180,92)",
+            highlight: "rgba(253,180,92,0.8)",
             label: "Likes"
         }
     ];
@@ -62,13 +62,13 @@
     data = {
         labels: [
             {% for word in stats.top_words(4) %}
-                "{{ word[0][1:-1].capitalize() }}",
+                "{{ word[0].capitalize() }}",
             {% endfor %}
         ],
         datasets: [{
             label: "Most common words",
             fillColor: "#3b5998",
-            strokeColor: "#304060",
+            strokeColor: "#3b5998",
             highlightFill: "#304060",
             highlightStroke: "#304060",
             data: [
