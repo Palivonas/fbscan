@@ -1,3 +1,7 @@
+html, body {
+    height: 100%
+}
+
 body {
     font-family: "Muli", sans-serif;
     margin: 0px;
@@ -137,19 +141,15 @@ h2 {
 }
 
 .group p {
-    margin: 0px;
-    margin-left: 30px;
+    display: inline;
 }
 
 .group img {
-    float: left;
-    margin: 0px;
     margin-right: 5px;
 }
 
 .group input {
-    float:left;
-    margin: 0px;
+    margin: 3px;
     margin-right: 5px;
 }
 
@@ -206,7 +206,8 @@ h2 {
     margin-bottom: 50px;
     border-left: 4px solid #3b5998;
     padding-left: 10px;
-    margin-right: 100px;s
+    margin-right: 100px;
+    clear: left;
 }
 
 #length h2 {

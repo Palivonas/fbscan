@@ -1,10 +1,15 @@
 "use strict";
 
 function getFormData() {
-    document.cookie="token="+$("input:text").val();
-    document.cookie="group_id="+$("input:radio:checked").val();
+    var group = $("input:radio:checked").val();
+    if (group === "custom") {
+        group = $("input[name='custom_id']").val()
+    }
+    document.cookie = "token=" + $("input[name='access_token']").val();
+    document.cookie = "group_id=" + group;
     
-    var args = $("#group-list-form").serialize();
+    var args = "group_id=" + group + "&access_token="+$("input[name='access_token']").val();
+    $("#go").replaceWith("<img src='static/ajax-loader.gif' style='float:right; clear:both; margin-top:10px'>")
     displayTab(args, "general");
 }
 
@@ -59,6 +64,7 @@ function listGroups(token, no_fade) {
             list.append(option);
         }
         
+        list.append("<div class='group'><img src='static/custom.png'><input type='radio' name='group_id' value='custom'><label>Custom ID: </label><input type='text' name='custom_id'></div>");
         list.append("Access token: <input type='text' style='margin: 10px 10px 0px 0px' name='access_token' value='" + token + "'>");
         list.append("<input type='button' id='go' onclick='getFormData()' value='Go!' style='float:right; clear:both; margin-top:10px'>");
         
