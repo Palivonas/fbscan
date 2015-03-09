@@ -17,7 +17,7 @@ class FbScanError(Exception):
     def __str__(self):
         text = repr(self.value)
         # if dump is not None:
-            # text += "\n" + repr(self.dump)
+        #     text += "\n" + repr(self.dump)
         return text
 
 
@@ -62,7 +62,8 @@ class FbScan:
             self.members = cached['members']
             loaded = True
         if not loaded:
-            self.posts = self.fetch()['data']
+            self.members = self.fetch_members()['data']
+            self.posts = self.fetch(paged=True)['data']
             self.fetch_paged()
             self.fetch_comment_likes()
             self.members = self.fetch_members()['data']
@@ -74,32 +75,46 @@ class FbScan:
             cache_file.write(json.dumps(cached))
             cache_file.close()
         self.fetch_time = perf_counter() - start_time
+        for member in self.members:
+            self.members_dict[member['id']] = member
         self.separate()
         self.generate_flat()
         self.basic_count()
-        for member in self.members:
-            self.members_dict[member['id']] = member
 
-    def fetch(self, url=None, paged=False, container=None):
+    def fetch(self, url=None, paged=False, container=None, limit=0):
         if url is None:
             url = self.graph_url + self.group_id + '/feed?' + urllib.parse.urlencode(self.params)
-        print(url)
+            if 'limit' in self.params and int(self.params['limit']) > 0:
+                limit = int(self.params['limit'])
+            else:
+                limit = 50
+
+        print('--------------\n\n'+url+'\n\n--------------')
         self.url_fetched = url
         try:
             response = urllib.request.urlopen(url).read().decode()
             self.request_count += 1
             content = json.loads(response)
             if container is not None:
-                content = content[container]
-            while paged and 'next' in content['paging']:
+                if container in content:
+                    content = content[container]
+                else:
+                    content['data'] = []
+                    content['paging'] = []
+            under_limit = limit == 0 or len(content['data']) < limit
+            while paged and under_limit and 'next' in content['paging']:
                 next_url = content['paging']['next']
                 del content['paging']['next']
+                print('--------------\n\n'+next_url+'\n\n--------------')
                 response = urllib.request.urlopen(next_url).read().decode()
                 self.request_count += 1
                 more = json.loads(response)
                 content['data'].extend(more['data'])
                 if 'next' in more['paging']:
                     content['paging']['next'] = more['paging']['next']
+                under_limit = limit == 0 or len(content['data']) < limit
+            if 0 < limit < len(content['data']):
+                del content['data'][limit:]
             return content
         except KeyError as error:
             raise FbScanError(error)
@@ -136,7 +151,11 @@ class FbScan:
 
     def separate(self):
         for post in self.posts:
-            if 'comments' in post:
+            if post['from']['id'] not in self.members_dict:
+                post['from']['administrator'] = False
+                self.members_dict[post['from']['id']] = post['from']
+                self.members.append(post['from'])
+            if 'comments' in post and len(post['comments']['data']) > 0:
                 for comment in post['comments']['data']:
                     if 'likes' in comment:
                         self.likes[comment['id']] = comment['likes']
@@ -219,11 +238,30 @@ class FbScan:
                         pass
         return members
 
+    def active_members(self, posts=True, comments=True, likes=False):
+        def rule(member):
+            return (posts and member['post_count'] > 0)\
+                or (comments and member['comment_count'] > 0)\
+                or (likes and member['like_count'] > 0)
+        return list(filter(rule, self.members))
+
+    def inactive_members_(self):
+        return list(set(self.members) - set(self.active_members(likes=True)))
+
+    @property
+    def administrators(self):
+        return [member for member in self.members if member['administrator']]
+
     @property
     def only_like(self):
         inactive = self.inactive_members()
         maybe_liked = self.inactive_members(likes=False)
         return [maybe_liked[member] for member in maybe_liked if member not in inactive]
+
+    def commented_or_liked(self):
+        inactive = self.inactive_members()
+        maybe = self.inactive_members(likes=False, comments=False)
+        return [maybe[member] for member in maybe if member not in inactive]
 
     @property
     def member_count(self):
@@ -234,6 +272,24 @@ class FbScan:
             if option in ['time_from', 'time_to']:
                 for i, post in enumerate(self.posts):
                     pass
+
+    def posts_by(self, member_id):
+        return list(filter(lambda post: post['from']['id'] == member_id, self.posts))
+
+    def comments_by(self, member_id):
+        return list(filter(lambda comment: comment['from']['id'] == member_id, self.flat_comments))
+
+    def posts_liked_by(self, member_id):
+        # not working yet
+        def rule(post):
+            return post['id'].split('_')[1] in self.likes and member_id in [like['id'] for like in self.likes[post['id']]]
+        return list(filter(rule, self.posts))
+
+    def comments_liked_by(self, member_id):
+        # same here
+        def rule(post):
+            return post['id'] in self.likes and member_id in [like['id'] for like in self.likes[post['id']]]
+        return list(filter(rule, self.flat_comments))
 
     def top_words(self, count=5, one_per_message=True, scan_posts=True, scan_comments=True, exclude_common=True):
         texts = []
@@ -255,6 +311,13 @@ class FbScan:
             file.close()
             words = [w for w in words if w not in common_words]
         return collections.Counter(words).most_common(count)
+
+    def posts_type(self, post_type):
+        """
+        :param post_type: link, status, photo, video, offer
+        :return:
+        """
+        return list(filter(lambda post: post['type'] == post_type, self.posts))
 
     @property
     def post_count(self):
@@ -284,6 +347,18 @@ class FbScan:
         return total_len / len(self.posts)
 
     @property
+    def average_post_words(self):
+        if len(self.posts) == 0:
+            return 0
+        total_len = 0
+        for post in self.posts:
+            try:
+                total_len += len(post['message'].split())
+            except KeyError:
+                pass
+        return total_len / len(self.posts)
+
+    @property
     def average_comment_len(self):
         if len(self.flat_comments) == 0:
             return 0
@@ -291,6 +366,18 @@ class FbScan:
         for comment in self.flat_comments:
             try:
                 total_len += len(comment['message'])
+            except KeyError:
+                pass
+        return total_len / len(self.flat_comments)
+
+    @property
+    def average_comment_words(self):
+        if len(self.flat_comments) == 0:
+            return 0
+        total_len = 0
+        for comment in self.flat_comments:
+            try:
+                total_len += len(comment['message'].split())
             except KeyError:
                 pass
         return total_len / len(self.flat_comments)
@@ -310,49 +397,100 @@ class FbScan:
         most = sorted(self.flat_comments, key=get_like_count, reverse=True)
         return most[:count]
 
-    def busiest_hours(self, item=''):
+    @property
+    def commented_posts(self):
+        return [post for post in self.posts if post['id'] in self.comments]
+
+    @property
+    def commented_posts_count(self):
+        count = 0
+        for post in self.posts:
+            if post['id'] in self.comments:
+                count += 1
+        return count
+
+    @property
+    def liked_posts(self):
+        return [post for post in self.posts if post['id'] in self.likes]
+
+    @property
+    def liked_or_commented(self):
+        return [post for post in self.posts if post['id'] in self.likes or post['id'] in self.comments]
+
+    @property
+    def liked_and_commented(self):
+        return [post for post in self.posts if post['id'] in self.likes and post['id'] in self.comments]
+
+    def busiest_hours(self, item='', comment_value=1, post_value=4):
         hours = {}
         for h in range(0, 24):
             hours[h] = 0
-        for items, value in [('flat_comments', 1), ('posts', 4)]:
-            for item in getattr(self, items):
+        items = [('flat_comments', comment_value), ('posts', post_value)]
+        for item_type, value in items:
+            if len(item) > 0 and item_type != item:
+                continue
+            for item in getattr(self, item_type):
                 comment_time = strptime(item['created_time'][:-5], '%Y-%m-%dT%H:%M:%S')
                 hours[int(comment_time.tm_hour)] += value
         return hours
 
+    @property
+    def busiest_hours_posts(self):
+        return self.busiest_hours('posts')
+
+    @property
+    def busiest_hours_comments(self):
+        return self.busiest_hours('flat_comments')
+
+    @property
+    def post_likes_count(self):
+        return sum(post['like_count'] for post in self.posts)
+
+    @property
+    def comment_likes_count(self):
+        return sum(comment['like_count'] for comment in self.flat_comments)
+
 
 def run(group_id='', params={}, ignore_cache=False):
-    if 'ignore_cache' in params:
-        ignore_cache = params['ignore_cache'] == 'on'
-        del params['ignore_cache']
     output = ''
-
-    # if 'group_id' == '':
-        # group_id = '190594157804565'
-    output += json.dumps(params, indent=2)
-    success = True
 
     ga = FbScan(group_id, params)
     ga.load(ignore_cache)
     # output += '\n<a href="' + ga.fetch_url + '" target="_blank">graph_url</a>'
     output += '<ul>'
-    for w in ga.top_words(4):
+    for w in ga.top_words(10):
         output += '<li>'
         output += '{:<3d} - {}'.format(w[1], w[0]) + "\n"
         output += '</li>'
     output += '</ul>'
     output += '\n {:} requests in {:.3f} seconds'.format(ga.request_count, ga.fetch_time)
     output += '\n post count = {:}'.format(ga.post_count)
+    lengths = [len(ga.posts_type(post_type)) for post_type in ['status', 'photo', 'video', 'link', 'event', 'offer']]
+    output += '\n\tof which {:} text posts, {:} photos, {:} videos, {:} links, {:} events, {:} offers'.format(*lengths)
+    commented = len(ga.commented_posts)
+    liked = len(ga.liked_posts)
+    liked_and_commented = len(ga.liked_and_commented)
+    ignored = ga.post_count - len(ga.liked_or_commented)
+    output += '\n{:} ({:.2f}%) commented posts'.format(commented, 100 * commented / ga.post_count)
+    output += '\n{:} ({:.2f}%) liked posts'.format(liked, 100 * liked / ga.post_count)
+    output += '\n{:} ({:.2f}%) liked and commented posts'.format(liked_and_commented, 100 * liked_and_commented / ga.post_count)
+    output += '\n{:} ({:.2f}%) ignored posts'.format(ignored, 100 * ignored / ga.post_count)
+    output += '\n comments per post = {:.2f}'.format(ga.comment_count / ga.post_count)
+    output += '\n likes per post = {:.2f}'.format(ga.post_likes_count / ga.post_count)
+    output += '\n likes per comment = {:.2f}'.format(ga.comment_likes_count / ga.comment_count)
     output += '\n comment count = {:}'.format(ga.comment_count)
     output += '\n like count = {:}'.format(ga.like_count)
-    output += '\n member count = {:}'.format(ga.member_count)
-    inactive = len(ga.inactive_members())
-    output += '\n totally inactive members = {:} ({:.1f}%)'.format(inactive, 100 * inactive / ga.member_count)
+    output += '\n member count = {:} (wrong if above ~4500, FB limitations)'.format(ga.member_count)
+    output += '\n most recent members = <ul>' + ''.join(['<li>'+member['name']+'</li>' for member in ga.members[:3]]) + '</li>'
+    active = len(ga.active_members())
+    inactive = ga.member_count - len(ga.active_members(likes=True))
+    output += '\n active (commented or posted) members = {:} ({:.1f}%)'.format(active, 100 * active / ga.member_count)
+    output += '\n inactive members (not even liked) = {:} ({:.1f}%)'.format(inactive, 100 * inactive / ga.member_count)
     like_only = len(ga.only_like)
     output += '\n only liked something = {:} ({:.1f}%)'.format(like_only, 100 * like_only / ga.member_count)
 
-    output += '\n average post length = {:.2f}'.format(ga.average_post_len)
-    output += '\n average comment length = {:.2f}'.format(ga.average_comment_len)
+    output += '\n average post word count = {:.2f}'.format(ga.average_post_words)
+    output += '\n average comment word count = {:.2f}'.format(ga.average_comment_words)
     output += '\n most commented = '
     output += '<ul>'
     for post in ga.most_commented():
