@@ -53,6 +53,9 @@ class FbScan:
     def has_cache(self):
         return os.path.exists(self.cache_file)
 
+    def clear_cache(self):
+        return os.remove(self.cache_file)
+
     def load(self, ignore_cache=False):
         loaded = False
         start_time = perf_counter()
@@ -455,6 +458,7 @@ class FbScan:
 
 def work(group_id='', params={}):
     ga = FbScan(group_id, params)
+    ga.clear_cache()
     ga.load(ignore_cache=True)
     return 'data fetched for group ' + group_id
 
