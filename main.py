@@ -38,6 +38,14 @@ def fetch():
         #return render_template('stats.html', stats=stats, fb=fb)
         return fb.run(group_id, args)
 
+@app.route('/clearcache')
+def clearcache():
+    try:
+        os.remove('fb_cache/' + request.args['group_id'] + '.json')
+        return 'File deleted'
+    except IOError as e:
+        return 'Failed to delete file: <br />' + repr(e)
+
 @app.route('/dataready')
 def dataready():
     if 'group_id' in request.args:
