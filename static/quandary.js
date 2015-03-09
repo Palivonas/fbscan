@@ -2,13 +2,30 @@
 
 function getFormData() {
     var group = $("input:radio:checked").val();
+    var token = $("input[name='access_token']").val()
+    var max_posts = $("input[name='max_posts']").val()
+    
     if (group === "custom") {
         group = $("input[name='custom_id']").val();
     }
-    document.cookie = "token=" + $("input[name='access_token']").val();
+    
+    if (!group) {
+        alert("Please select a group");
+        return false;
+    }
+    else if (!token) {
+        alert("Please insert an access token");
+        return false;
+    }
+    else if (!Number(max_posts)) {
+        alert("Invalid number of posts");
+        return false;
+    }
+    
+    document.cookie = "token=" + token;
     document.cookie = "group_id=" + group;
     
-    var args = "group_id=" + group + "&access_token="+$("input[name='access_token']").val();
+    var args = "group_id=" + group + "&access_token=" + token + "&max_posts=" + max_posts;
     $("#go").replaceWith("<img src='static/ajax-loader.gif' style='float:right; clear:both; margin-top:10px'>");
     displayTab(args, "general");
 }
@@ -65,8 +82,9 @@ function listGroups(token, no_fade) {
         }
         
         list.append("<div class='group'><img src='static/custom.png'><input type='radio' name='group_id' value='custom'><label>Custom ID: </label><input type='text' name='custom_id'></div>");
-        list.append("Access token: <input type='text' style='margin: 10px 10px 0px 0px' name='access_token' value='" + token + "'>");
-        list.append("<input type='button' id='go' onclick='getFormData()' value='Go!' style='float:right; clear:both; margin-top:10px'>");
+        list.append("Access token: <input type='text' style='margin: 10px 10px 0px 0px' name='access_token' value='" + token + "'><br>");
+        list.append("Maximum number of posts to analyse: <input type='text' style='margin: 5px 10px 0px 0px' name='max_posts' value='100'><br>");
+        list.append("<input type='button' id='go' onclick='getFormData()' value='Go!' style='float:right'>");
         
         if (no_fade) {
             $("#group-list").show();
