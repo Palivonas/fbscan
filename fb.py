@@ -22,7 +22,7 @@ class FbScanError(Exception):
 
 
 class FbScan:
-    def __init__(self, group_id, params=None, cache_folder='fb_cache'):
+    def __init__(self, group_id, params=None, cache_folder=None):
         """
         Sets up variables
         :return: None
@@ -31,6 +31,8 @@ class FbScan:
         if params is None:
             params = {}
         self.params = params
+        if cache_folder is None:
+            cache_folder = os.path.dirname(os.path.abspath(__file__)) + '/fb_cache'
         self.cache_folder = cache_folder
         if not os.path.exists(cache_folder):
             os.mkdir(cache_folder)
@@ -54,7 +56,11 @@ class FbScan:
         return os.path.exists(self.cache_file)
 
     def clear_cache(self):
-        return os.remove(self.cache_file)
+        try:
+            os.remove(self.cache_file)
+            return True
+        except FileNotFoundError as e:
+            return False
 
     def load(self, ignore_cache=False):
         loaded = False
