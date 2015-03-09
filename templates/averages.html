@@ -9,10 +9,6 @@
     </div>
 {% endmacro %}
 
-<!-- Copyright notice
-The "comment.png" icon used in this page was designed by Linh Pham Thi Dieu (http://linhpham.me/). It is free to use for any project.
-It is part of the Miu icon collection, which can be found at http://linhpham.me/miu/
--->
 <div id="most-commented" class="statbox">
     <h2>Most commented posts</h2>
     {% for post in stats.most_commented() %}
@@ -20,12 +16,6 @@ It is part of the Miu icon collection, which can be found at http://linhpham.me/
     {% endfor %}
 </div>
 
-<!-- Copyright notice
-The "like.png" icon used in this page was designed by IconsMind (https://www.iconsmind.com/) and released under the Creative Commons Attribution 2.5 Generic license.
-It is part of the Social Media icon pack, which can be foud at https://www.iconfinder.com/iconsets/social-media-13
-A copy of the licence can be found at http://creativecommons.org/licenses/by/2.5/legalcode
-No changes were made to the original icon.
--->
 <div id="most-liked" class="statbox">
     <h2>Most liked posts</h2>
     {% for post in stats.most_liked_posts() %}

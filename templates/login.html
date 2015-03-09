@@ -15,7 +15,8 @@
             
             if (cookie.token && cookie.group_id) {
                 displayTab($.param(cookie), "general", true);
-            } else if (cookie.token) {
+            }
+            else if (cookie.token) {
                 $(document).ready(function() {
                     $("#token-dialog").remove();
                     listGroups(cookie.token, true);
@@ -31,11 +32,12 @@
                     <ul>
                         <li><a href="{{url_for('.index')}}" onclick="resetToken()">Change Access Token</a></li>
                         <li><a href="{{url_for('.index')}}" onclick="resetGroup()">Change Group</a></li>
+                        <li><a href="javascript:void(0)" onclick="$('.copyright').show()">Copyright notice</a></li>
                     </ul>
                 </li>
-                <li id="users">Users</li>
-                <li id="averages">Averages</li>
-                <li class="selected" id="general">General</li>
+                <li class="page" id="users">Users</li>
+                <li class="page" id="averages">Averages</li>
+                <li class="page selected" id="general">General</li>
             </ul>
         </div>
         
@@ -49,7 +51,7 @@
                         Your access token needs the user_groups permission.
                     </p>
                     <br>
-                    <input type="text" id="token" placeholder="Enter your acces token">
+                    <input type="text" id="token" placeholder="Enter your access token">
                     <input type="button" id="token-button" value="Login">
                 </div>
                 
@@ -60,7 +62,54 @@
             </div>
         </div>
         
+        <div id="cookie-notice">
+            <p>This website needs cookies to function correctly. By continuing to use Quandary, you accept the use of cookies</p>
+            <div class="button info">More info</div>
+            <div class="button close">Hide</div>
+        </div>
+        
+        <div class="modal cookies">
+            <div class="notice">
+                <p>Cookies are very small text files that websites place on your computer to remember information about you.
+                    They might contain your username, preferences or other informations needed to provide you with a better experience.</p>
+                <p>Quanday uses 3 so-called "session" cookies, of which 2 are essential: it temporarily stores your access token and the group you have chosen to analyse. This information is necessary
+                    for the application, and it could not work without it. Quandary will also remember if you have seen this message, to avoid bothering you again once you have been informed.</p>
+                <p>All these cookies are automatically deleted when you close your browser.</p>
+                <div class="button close">OK</div>
+            </div>
+        </div>
+        
+        <div class="modal copyright">
+            <div class="notice">
+                <p>The "comment.png", "post.png" and "custom.png" icons used in this website were designed by <a href="http://linhpham.me/">Linh Pham Thi Dieu</a>. They are free to use for any project.<br>
+                    They are part of the <a href="http://linhpham.me/miu/">Miu icon collection</a>.</p>
+                <p>The "like.png" icon used in this website was designed by <a href="https://www.iconsmind.com/">IconsMind</a> and released under the <a href="http://creativecommons.org/licenses/by/2.5/legalcode">Creative Commons Attribution 2.5 Generic license.</a><br>
+                    It is part of the <a href="https://www.iconfinder.com/iconsets/social-media-13">Social Media icon pack</a>.<br>
+                    No changes were made to the original icon.</p>
+                <div class="button close">OK</div>
+            </div>
+        </div>
+        
         <script>
+            // Legal cookie stuff
+            if (!cookie.user_informed) {
+                $("#cookie-notice").show();
+            }
+            
+            $("#cookie-notice .close").click(function() {
+                $("#cookie-notice").remove();
+                document.cookie = "user_informed=1";
+            });
+            
+            $("#cookie-notice .info").click(function() {
+                $(".cookies").show();
+            });
+            
+            $(".notice .close").click(function() {
+                $(".modal").hide();
+            });
+            
+            
             $("#token-button").click(function() {
                 listGroups($("#token").val());
             });
@@ -80,7 +129,7 @@
                 changeTab("users");
             });
             
-            $(".tabs").children().click(function() {
+            $(".page").click(function() {
                 $(".selected").removeClass("selected");
                 $(this).addClass("selected");
             });
@@ -88,11 +137,13 @@
             // Options menu
             $("#options").click(function() {
                 if ( $("ul", "#options").is(":visible") ) {
+                    $(this).removeClass("selected");
                     $("ul", "#options").hide();
                 } else {
+                    $(this).addClass("selected");
                     $("ul", "#options").show();
                 }
-            });
+            });       
         </script>
     </body>
 </html>

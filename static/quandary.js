@@ -3,13 +3,13 @@
 function getFormData() {
     var group = $("input:radio:checked").val();
     if (group === "custom") {
-        group = $("input[name='custom_id']").val()
+        group = $("input[name='custom_id']").val();
     }
     document.cookie = "token=" + $("input[name='access_token']").val();
     document.cookie = "group_id=" + group;
     
     var args = "group_id=" + group + "&access_token="+$("input[name='access_token']").val();
-    $("#go").replaceWith("<img src='static/ajax-loader.gif' style='float:right; clear:both; margin-top:10px'>")
+    $("#go").replaceWith("<img src='static/ajax-loader.gif' style='float:right; clear:both; margin-top:10px'>");
     displayTab(args, "general");
 }
 
