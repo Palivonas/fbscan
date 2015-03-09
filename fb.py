@@ -86,6 +86,7 @@ class FbScan:
             cache_file = open(self.cache_file, 'w+')
             cache_file.write(json.dumps(cached))
             cache_file.close()
+            print('Wrote to file ' + self.cache_file)
         self.fetch_time = perf_counter() - start_time
         for member in self.members:
             self.members_dict[member['id']] = member
