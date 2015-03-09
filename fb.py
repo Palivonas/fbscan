@@ -50,10 +50,13 @@ class FbScan:
         cache_id = self.group_id
         return os.path.join(self.cache_folder, cache_id + '.json')
 
+    def has_cache(self):
+        return os.path.exists(self.cache_file)
+
     def load(self, ignore_cache=False):
         loaded = False
         start_time = perf_counter()
-        if not ignore_cache and os.path.exists(self.cache_file):
+        if not ignore_cache and self.has_cache():
             cache_file = open(self.cache_file, 'r')
             cache_content = cache_file.read()
             cache_file.close()
@@ -450,6 +453,10 @@ class FbScan:
     def comment_likes_count(self):
         return sum(comment['like_count'] for comment in self.flat_comments)
 
+def work(group_id='', params={}):
+    ga = FbScan(group_id, params)
+    ga.load(ignore_cache=True)
+    return 'data fetched for group ' + group_id
 
 def run(group_id='', params={}, ignore_cache=False):
     output = ''
