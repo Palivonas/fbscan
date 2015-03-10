@@ -7,6 +7,7 @@ import boto.s3.connection
 import os
 import re
 import collections
+import base64
 from time import strptime, perf_counter
 from flask import jsonify, flash, render_template
 
@@ -51,8 +52,8 @@ class FbScan:
         self.start_time = 0
         self.fetch_time_limit = 170
 
-        AWS_ACCESS_KEY_ID = 'AKIAIEGKZ4WV3MT6KRHA'
-        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_ACCESS_KEY_ID = base64.b64decode('QUtJQUlaNkhHSlo3QVZGVEtLWlE=').decode()
+        AWS_SECRET_ACCESS_KEY = base64.b64decode('cUUxUjkwdERmWFRzZVJBU3k1bTcyaVQ3clpHZVdpUmxLZk5HM2RxOQ==').decode()
 
         bucket_name = 'fbscan_cache'
         if str(__file__).startswith('/Users/Andrius'):
