@@ -369,6 +369,7 @@ h2 {
 }
 
 .results li {
+    background-color: #fff;
     padding: 5px;
     width: 100%;
     border: 1px solid #3b5998;
