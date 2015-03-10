@@ -408,6 +408,7 @@ h2 {
 }
 
 #user-activities {
+    min-height: 200px;
     width: 100%;
     float: left;
 }
