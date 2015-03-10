@@ -24,7 +24,7 @@
 </div>
 
 <div id="most-liked-comments" class="statbox">
-    <h2>Most liked posts</h2>
+    <h2>Most liked comments</h2>
     {% for post in stats.most_liked_comments() %}
         {{ topTen(post, post["like_count"], "like.png") }}
     {% endfor %}
