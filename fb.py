@@ -100,7 +100,6 @@ class FbScan:
             # cache_file = open(self.cache_file, 'w+')
             # cache_file.write(json.dumps(cached))
             # cache_file.close()
-            # print('Wrote to file ' + self.cache_file)
             print('--- WRITING TO AMAZON S3 ---')
             cache_key = self.bucket.new_key(self.cache_file)
             cache_key.set_contents_from_string(json.dumps(cached))
