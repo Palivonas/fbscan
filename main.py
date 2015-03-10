@@ -40,11 +40,8 @@ def fetch():
 
 @app.route('/clearcache')
 def clearcache():
-    try:
-        os.remove('fb_cache/' + request.args['group_id'] + '.json')
-        return 'File deleted'
-    except IOError as e:
-        return 'Failed to delete file: <br />' + repr(e)
+    ga = fb.FbScan(request.args['group_id'])
+    return repr(ga.clear_cache())
 
 @app.route('/dataready')
 def dataready():

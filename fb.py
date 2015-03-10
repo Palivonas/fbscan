@@ -2,6 +2,8 @@ import urllib.parse
 import urllib.request
 import urllib.error
 import json
+import boto
+import boto.s3.connection
 import os
 import re
 import collections
@@ -47,28 +49,33 @@ class FbScan:
         self.request_count = 0
         self.fetch_time = 0
 
+        AWS_ACCESS_KEY_ID = 'AKIAIEGKZ4WV3MT6KRHA'
+        AWS_SECRET_ACCESS_KEY = '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'
+
+        bucket_name = 'fbscan_cache'
+        conn = boto.connect_s3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+        self.bucket = conn.create_bucket(bucket_name, location=boto.s3.connection.Location.DEFAULT)
+
     @property
     def cache_file(self):
         cache_id = self.group_id
-        return os.path.join(self.cache_folder, cache_id + '.json')
+        # return os.path.join(self.cache_folder, cache_id + '.json')
+        return cache_id + '.json'
 
     def has_cache(self):
-        return os.path.exists(self.cache_file)
+        return self.bucket.get_key(self.cache_file) is not None
 
     def clear_cache(self):
-        try:
-            os.remove(self.cache_file)
-            return True
-        except FileNotFoundError as e:
-            return False
-
+        self.bucket.delete_key(self.cache_file)
     def load(self, ignore_cache=False):
         loaded = False
         start_time = perf_counter()
         if not ignore_cache and self.has_cache():
-            cache_file = open(self.cache_file, 'r')
-            cache_content = cache_file.read()
-            cache_file.close()
+            # cache_file = open(self.cache_file, 'r')
+            # cache_content = cache_file.read()
+            # cache_file.close()
+            cache_key = self.bucket.get_key(self.cache_file)
+            cache_content = cache_key.get_contents_as_string().decode()
             cached = json.loads(cache_content)
             self.posts = cached['data']
             self.members = cached['members']
@@ -83,10 +90,12 @@ class FbScan:
                 'data': self.posts,
                 'members': self.members
             }
-            cache_file = open(self.cache_file, 'w+')
-            cache_file.write(json.dumps(cached))
-            cache_file.close()
-            print('Wrote to file ' + self.cache_file)
+            # cache_file = open(self.cache_file, 'w+')
+            # cache_file.write(json.dumps(cached))
+            # cache_file.close()
+            # print('Wrote to file ' + self.cache_file)
+            cache_key = self.bucket.new_key(self.cache_file)
+            cache_key.set_contents_from_string(json.dumps(cached))
         self.fetch_time = perf_counter() - start_time
         for member in self.members:
             self.members_dict[member['id']] = member
@@ -102,7 +111,7 @@ class FbScan:
             else:
                 limit = 50
 
-        print('--------------\n\n'+url+'\n\n--------------')
+        print('--------------\n'+url+'\n--------------')
         self.url_fetched = url
         try:
             response = urllib.request.urlopen(url).read().decode()

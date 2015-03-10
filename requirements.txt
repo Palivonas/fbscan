@@ -1,3 +1,4 @@
+boto==2.36.0
 click==3.3
 Flask==0.10.1
 gunicorn==19.1.1
