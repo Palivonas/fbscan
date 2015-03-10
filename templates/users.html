@@ -63,9 +63,8 @@
         container.empty();
         
         var list = $("<ul>");
-        list.append("<li onclick='showPosts(\""+ name +"\")'><b>" + user.posts.length + "</b> Posts</li>");
-        list.append("<li onclick='showComments(\""+ name +"\")'><b>" + user.comments.length + "</b> Comments</li>");
-        list.append("<li onclick='showLikes(\""+ name +"\")'><b>" + user.liked.length + "</b> Posts liked</li>");
+        list.append("<li class='button' onclick='showPosts(\""+ name +"\")'><b>" + user.posts.length + "</b> Posts</li>");
+        list.append("<li class='button' onclick='showComments(\""+ name +"\")'><b>" + user.comments.length + "</b> Comments</li>");
         container.append(list);
     }
     
@@ -165,11 +164,6 @@
                         message: "{{ comment.message|replace("\n", " ") }}",
                         date: "{{ comment.created_time.split("T")[0] }}"
                     },
-                {% endfor %}
-            ],
-            liked: [
-                {% for post in stats.posts_liked_by(user.id) %}
-                    "{{ post.message|replace("\n", " ") }}",
                 {% endfor %}
             ]
         };

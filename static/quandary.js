@@ -33,7 +33,7 @@ function getFormData() {
     var interval = setInterval(function() {
         $.get("/dataready?group_id=" + group, function(response) {
             if (response == 1) {
-                displayTab(args, "general", interval);
+                displayTab(args, "general", false, interval);
             }
         });
     }, 2000);
@@ -51,7 +51,7 @@ function getCookieData() {
 }
 
 
-function displayTab(args, tab, interval, no_fade) {
+function displayTab(args, tab, no_fade, interval) {
     if (interval) {
         clearInterval(interval);
     }
