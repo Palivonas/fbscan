@@ -27,7 +27,17 @@ function getFormData() {
     
     var args = "group_id=" + group + "&access_token=" + token + "&limit=" + limit;
     $("#go").replaceWith("<img src='static/ajax-loader.gif' style='float:right; clear:both; margin-top:10px'>");
-    displayTab(args, "general");
+    
+    $.get("/work?" + args);
+    
+    var interval = setInterval(function() {
+        $.get("/dataready?group_id=" + group, function(response) {
+            if (response == 1) {
+                displayTab(args, "general", interval);
+            }
+        });
+    }, 2000);
+    
 }
 
 
@@ -41,7 +51,11 @@ function getCookieData() {
 }
 
 
-function displayTab(args, tab, no_fade) {
+function displayTab(args, tab, interval, no_fade) {
+    if (interval) {
+        clearInterval(interval);
+    }
+    
     $.get("/"+ tab +"?" + args, function(response) {
         var page = $("#container");
         
