@@ -5,7 +5,7 @@
             <img src="{{ url_for('static', filename=icon) }}" />
         </div>
         <h3>{{ post["message"] }}</h3>
-        <p>Posted by <a href="https://facebook.com/{{ post['id'] }}">{{ post["from"]["name"] }}</a> on {{ post["created_time"].split("T")[0] }}</p>
+        <p>Posted by <a target="_blank" href="https://facebook.com/{{ post['id'] }}">{{ post["from"]["name"] }}</a> on {{ post["created_time"].split("T")[0] }}</p>
     </div>
 {% endmacro %}
 

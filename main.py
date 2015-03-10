@@ -10,8 +10,46 @@ app.debug = True
 
 @app.route('/')
 def index(): 
-    #return render_template("login.html")
-    return render_template('debug.html')
+    return render_template("login.html")
+
+@app.route('/general', methods=['GET', 'POST'])
+def general():
+    return render_template('general.html', stats=getStats())
+
+@app.route('/averages', methods=['GET', 'POST'])
+def averages():
+    return render_template('averages.html', stats=getStats())
+
+@app.route('/users', methods=['GET', 'POST'])
+def users():
+    return render_template('users.html', stats=getStats())
+
+def getStats():
+    group_id = request.args['group_id']
+    args = singlify(request.args)
+    del args['group_id']
+    
+    if 'ignore_cache' in args:
+        ignore_cache = args['ignore_cache'] == 'on'
+        del args['ignore_cache']
+    else : ignore_cache = False;
+    stats = fb.FbScan(group_id, args)
+    if __name__ == '__main__':
+        stats.load(ignore_cache)
+    else:
+        try:
+            stats.load(ignore_cache)
+        except Exception as e:
+            return repr(e)
+    
+    if 'spitout' in args:
+        del args['spitout']
+        try:
+            return stats
+        except Exception as e:
+            return repr(e)
+    else:
+        return stats
 
 
 @app.route('/fetch', methods=['GET', 'POST'])
