@@ -55,8 +55,13 @@ class FbScan:
         AWS_SECRET_ACCESS_KEY = 'P69gZLh1KILBtAk/kabOE8r3grCKLiE8J197gdqd'
 
         bucket_name = 'fbscan_cache'
+        if str(__file__).startswith('/Users/Andrius'):
+            bucket_name = 'fbscan_cache_debug'
         conn = boto.connect_s3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-        self.bucket = conn.create_bucket(bucket_name, location=boto.s3.connection.Location.DEFAULT)
+        try:
+            self.bucket = conn.get_bucket(bucket_name)
+        except:
+            self.bucket = conn.create_bucket(bucket_name, location=boto.s3.connection.Location.DEFAULT)
 
     @property
     def cache_file(self):
@@ -95,6 +100,7 @@ class FbScan:
             # cache_file.write(json.dumps(cached))
             # cache_file.close()
             # print('Wrote to file ' + self.cache_file)
+            print('--- WRITING TO AMAZON S3 ---')
             cache_key = self.bucket.new_key(self.cache_file)
             cache_key.set_contents_from_string(json.dumps(cached))
         self.fetch_time = perf_counter() - self.start_time
@@ -141,7 +147,7 @@ class FbScan:
                 self.request_count += 1
                 more = json.loads(response)
                 content['data'].extend(more['data'])
-                if 'next' in more['paging']:
+                if 'paging' in more and 'next' in more['paging']:
                     content['paging']['next'] = more['paging']['next']
                 under_limit = limit == 0 or len(content['data']) < limit
             if 0 < limit < len(content['data']):

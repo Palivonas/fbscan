@@ -23,7 +23,8 @@ def fetch():
     if 'ignore_cache' in args:
         ignore_cache = args['ignore_cache'] == 'on'
         del args['ignore_cache']
-    else : ignore_cache = False;
+    else:
+        ignore_cache = False;
     stats = fb.FbScan(group_id, args)
     if __name__ == '__main__':
         stats.load(ignore_cache)

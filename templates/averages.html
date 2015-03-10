@@ -4,7 +4,7 @@
             <p>{{ count }}</p>
             <img src="{{ url_for('static', filename=icon) }}" />
         </div>
-        <h3>{{ post["message"] }}</h3>
+        <h3><a href="https://facebook.com/{{ post["id"] }}">{{ post["message"] }}</a></h3>
         <p>{{ "Posted by " + post["from"]["name"]+ " on " + post["created_time"].split("T")[0] }}</p>
     </div>
 {% endmacro %}
