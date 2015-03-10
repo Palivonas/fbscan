@@ -23,15 +23,36 @@
     {% endfor %}
 </div>
 
+<div id="most-liked-comments" class="statbox">
+    <h2>Most liked posts</h2>
+    {% for post in stats.most_liked_comments() %}
+        {{ topTen(post, post["like_count"], "like.png") }}
+    {% endfor %}
+</div>
+
 <div id="length" class="statbox">
-    <h2>Average post length:</h2><p>{{ stats.average_post_len|int }}</p>
+    <h2>Average words per post:</h2><p>{{ stats.average_post_words|round|int }}</p>
     <br>
-    <h2>Average comment length:</h2><p>{{ stats.average_comment_len|int }}</p>
+    <h2>Average words per comment:</h2><p>{{ stats.average_comment_words|round|int }}</p>
 </div>
 
 <div id="busiest-hours" class="statbox">
     <h2>Busiest Hours</h2>
     <canvas id="hours" width="1000"></canvas>
+</div>
+
+<div id="post-reaction-container" class="statbox">
+    <h2>Reactions</h2>
+    <canvas id="post-reaction" width="250" height="250"></canvas>
+    <div class="legend">
+        {% macro average(stat, label, color) %}
+            <div class="legend-color" style="background-color:{{color}}"></div><p>{{ label + ": " + ( stat * 100 / stats.post_count)|round|int|string + "%" }}</p>
+        {% endmacro %}
+        {{ average(stats.liked_and_commented|length, "Liked and commented", "rgb(95,147,57)") }}
+        {{ average(stats.liked_or_commented|length - stats.commented_posts|length, "Only commented", "rgb(70,191,189)") }}
+        {{ average(stats.liked_or_commented|length - stats.liked_posts|length, "Only liked", "rgb(253,180,92)") }}
+        {{ average(stats.post_count - stats.liked_or_commented|length, "Ignored", "rgb(224,44,44)") }}
+    </div>
 </div>
 
 <script>
@@ -59,4 +80,36 @@
     
     var context = $("#hours").get(0).getContext("2d");
     new Chart(context).Line(data);
+    
+    // Reactions
+    
+    data = [
+        {
+            value: {{stats.liked_and_commented|length}},
+            color: "rgb(95,147,57)",
+            highlight: "rgba(95,147,57,0.8)",
+            label: "Liked and commented"
+        },
+        {
+            value: {{stats.liked_or_commented|length - stats.liked_posts|length}},
+            color: "rgb(70,191,189)",
+            highlight: "rgba(70,191,189,0.8)",
+            label: "Only commented"
+        },
+        {
+            value: {{stats.liked_or_commented|length - stats.commented_posts|length}},
+            color: "rgb(253,180,92)",
+            highlight: "rgba(253,180,92,0.8)",
+            label: "Only liked"
+        },
+        {
+            value: {{stats.post_count - stats.liked_or_commented|length}},
+            color:"rgb(224,44,44)",
+            highlight: "rgba(224,44,44,0.8)",
+            label: "Neither"
+        }
+    ];
+    
+    context = $("#post-reaction").get(0).getContext("2d");
+    new Chart(context).Pie(data);
 </script>

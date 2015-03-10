@@ -17,13 +17,13 @@
     </div>
     <div id="top-commenters" class="top-users">
         <h2>Top commenters</h2>
-        {% for user in stats.top_posters() %}
+        {% for user in stats.top_commenters() %}
             {{ topUsers(user.name, user.comment_count, "comment.png") }}
         {% endfor %}
     </div>
     <div id="top-likes" class="top-users">
         <h2>Top likers</h2>
-        {% for user in stats.top_posters() %}
+        {% for user in stats.top_likers() %}
             {{ topUsers(user.name, user.like_count, "like.png") }}
         {% endfor %}
     </div>
@@ -36,13 +36,81 @@
         {% macro average(stat, label, color) %}
             <div class="legend-color" style="background-color:{{color}}"></div><p>{{ label + ": " + ( stat * 100 / (stats.member_count))|round|int|string + "%" }}</p>
         {% endmacro %}
-        {{ average((stats.member_count - stats.only_like|length - stats.inactive_members()|length), "Active users", "#5F9339") }}
+        {{ average(stats.active_members()|length, "Active users", "#5F9339") }}
         {{ average(stats.inactive_members()|length, "Inactive users", "#E02C2C") }}
         {{ average(stats.only_like|length, "Only liked something", "#FDB45C") }}
     </div>
 </div>
 
+<div id="search">
+    <h2>Search for a user</h2>
+    <input id="pattern" type="text">
+    <div class="results"></div>
+</div>
+
+<div id="search-widget">
+    <div id="user-stats"></div>
+    <div id="user-activities"></div>
+</div>
+
 <script>
+    function displayStats(name) {
+        $(".results").empty();
+        $("#pattern").val(name);
+        
+        var user = users[name];
+        var container = $("#user-stats");
+        container.empty();
+        
+        var list = $("<ul>");
+        list.append("<li onclick='showPosts(\""+ name +"\")'><b>" + user.posts.length + "</b> Posts</li>");
+        list.append("<li onclick='showComments(\""+ name +"\")'><b>" + user.comments.length + "</b> Comments</li>");
+        list.append("<li onclick='showLikes(\""+ name +"\")'><b>" + user.liked.length + "</b> Posts liked</li>");
+        container.append(list);
+    }
+    
+    
+    function showPosts(name) {
+        $("#user-activities").empty()
+        var posts = users[name].posts;
+        var l = posts.length;
+        
+        for (var i = 0; i < l; i++) {
+            $("#user-activities").append("<h3>" + posts[i].message + "</h3>");
+            $("#user-activities").append("<p>" + posts[i].date + "</p>");
+        }
+    }
+    
+    
+    function showComments(name) {
+        $("#user-activities").empty()
+        var comments = users[name].comments;
+        var l = comments.length;
+        
+        for (var i = 0; i < l; i++) {
+            $("#user-activities").append("<h3>" + comments[i].message + "</h3>");
+            $("#user-activities").append("<p>" + comments[i].date + "</p>");
+        }
+    }
+    
+    $("#search").on("input", function() {
+        $("#search .results").empty();
+        
+        var reg = new RegExp($("#pattern").val(), "i");
+        var l = names.length;
+        
+        $("#search .results").append("<ul class='result-list'>")
+        var list = $(".result-list");
+        for (var i = 0; i < l; i++) {
+            if (names[i].match(reg)) {
+                list.append("<li onclick='displayStats(\""+ names[i] + "\")'>" + names[i] + "</li>");
+            }
+        }
+    });
+    
+    
+    // Members Chart
+    
     var data = [
         {
             value: {{stats.inactive_members()|length}},
@@ -57,7 +125,7 @@
             label: "Only liked somthing"
         },
         {
-            value: {{stats.member_count - stats.only_like|length - stats.inactive_members()|length}},
+            value: {{stats.active_members()|length}},
             color: "rgb(95,147,57)",
             highlight: "rgba(95,147,57,0.8)",
             label: "Active"
@@ -66,4 +134,40 @@
     
     var context = $("#users-graph").get(0).getContext("2d");
     new Chart(context).Pie(data);
+    
+    // User search
+    var names = [
+        {% for user in stats.members %}
+            "{{ user.name }}",
+        {% endfor %}
+    ];
+    
+    var users = Array();
+    
+    {% for user in stats.members %}
+        users["{{ user.name }}"] = {
+            id: "{{ user.id }}",
+            posts: [
+                {% for post in stats.posts_by(user.id) %}
+                    {
+                        message: "{{ post.message|replace("\n", " ") }}",
+                        date: "{{ post.created_time.split("T")[0] }}"
+                    },
+                {% endfor %}
+            ],
+            comments: [
+                {% for comment in stats.comments_by(user.id) %}
+                    {
+                        message: "{{ comment.message|replace("\n", " ") }}",
+                        date: "{{ comment.created_time.split("T")[0] }}"
+                    },
+                {% endfor %}
+            ],
+            liked: [
+                {% for post in stats.posts_liked_by(user.id) %}
+                    "{{ post.message|replace("\n", " ") }}",
+                {% endfor %}
+            ]
+        };
+    {% endfor %}
 </script>

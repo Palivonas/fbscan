@@ -157,6 +157,8 @@ h2 {
 
 #numbers {
     font-size: 32px;
+    border-left: 4px solid #3b5998;
+    padding-left: 10px;
 }
 
 #numbers p {
@@ -218,6 +220,10 @@ h2 {
     float: right;
     font-size: 32px;
     margin: 0px;
+}
+
+#post-reaction-container {
+    width: 600px;
 }
 
 .top-ten {
@@ -334,4 +340,74 @@ h2 {
     position: absolute;
     background-color: rgba(0,0,0,0.5);
     display: none;
+}
+
+#search {
+    float: left;
+    clear: left;
+}
+
+#search input {
+    width: 250px;
+}
+
+.results {
+    position: absolute;
+    background-color: #fff;
+}
+
+.results ul {
+    width: 240px;
+    list-style: none;
+    margin: 0px;
+    margin-left: 2px;
+    padding: 0px;
+}
+
+.results li:first-child {
+    border-top: 1px solid #3b5998;
+}
+
+.results li {
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #3b5998;
+    border-top: 0px;
+    cursor: pointer;
+}
+
+.results li:hover {
+    background-color: rgba(59,89,152, 0.2)
+}
+
+#user-stats {
+    clear: both;
+    float: left;
+}
+
+#user-stats ul {
+    list-style: none;
+    padding: 0px;
+}
+
+#user-stats li {
+    padding: 5px;
+    margin-right: 40px;
+    font-size: 24px;
+    float: left;
+    -webkit-box-shadow:  0px 0px 3px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow:  0px 0px 3px 0px rgba(0,0,0,0.75);
+    box-shadow:  0px 0px 3px 0px rgba(0,0,0,0.75);
+    cursor: pointer;
+}
+
+#user-activities .selected {
+    -webkit-box-shadow: inset 0px 0px 3px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: inset 0px 0px 3px 0px rgba(0,0,0,0.75);
+    box-shadow: inset 0px 0px 3px 0px rgba(0,0,0,0.75);
+}
+
+#user-activities {
+    width: 100%;
+    float: left;
 }

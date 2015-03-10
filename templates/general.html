@@ -5,14 +5,19 @@
     {% endmacro %}
     
     {{factoid(stats.member_count, "Members")}}
-    {{factoid(stats.post_count, "Posts")}}
+    {{factoid(stats.posts_type('status')|length, "Posts")}}
     {{factoid(stats.comment_count, "Comments")}}
     {{factoid(stats.like_count, "Likes")}}
+    {{factoid(stats.posts_type('photo')|length, "Photos")}}
+    {{factoid(stats.posts_type('video')|length, "Videos")}}
+    {{factoid(stats.posts_type('link')|length, "Links")}}
+    {{factoid(stats.posts_type('event')|length, "Events")}}
+    {{factoid(stats.posts_type('offer')|length, "Offers")}}
 </div>
 
 <div id="words-graph-container" class="statbox">
     <h2>Most common words</h2>
-    <canvas id="words" width="400" height="300"></canvas>
+    <canvas id="words" width="600" height="400"></canvas>
 </div>
 
 <div id="activities-container" class="statbox">
@@ -61,7 +66,7 @@
     
     data = {
         labels: [
-            {% for word in stats.top_words(4) %}
+            {% for word in stats.top_words(10) %}
                 "{{ word[0].capitalize() }}",
             {% endfor %}
         ],
@@ -72,7 +77,7 @@
             highlightFill: "#304060",
             highlightStroke: "#304060",
             data: [
-                {% for word in stats.top_words(4) %}
+                {% for word in stats.top_words(10) %}
                     {{word[1]}},
                 {% endfor %}
             ] 
