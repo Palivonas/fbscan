@@ -87,7 +87,6 @@ class FbScan:
             self.posts = self.fetch(paged=True)['data']
             self.fetch_paged()
             self.fetch_comment_likes()
-            self.members = self.fetch_members()['data']
             cached = {
                 'data': self.posts,
                 'members': self.members
