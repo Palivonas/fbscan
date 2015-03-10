@@ -237,6 +237,10 @@ h2 {
     clear: both;
 }
 
+h3 {
+    font-weight: normal;
+}
+
 .top-ten p, .top-ten h3 {
     margin: 5px;
     margin-left: 40px;
@@ -244,7 +248,6 @@ h2 {
 
 .top-ten h3 {
     font-size: 18px;
-    font-weight: bold;
 }
 
 .count {
