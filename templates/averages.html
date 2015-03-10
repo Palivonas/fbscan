@@ -5,7 +5,7 @@
             <img src="{{ url_for('static', filename=icon) }}" />
         </div>
         <h3>{{ post["message"] }}</h3>
-        <p>Posted by <a target="_blank" href="https://facebook.com/{{ post['id'] }}">{{ post["from"]["name"] }}</a> on {{ post["created_time"].split("T")[0] }}</p>
+        <p><a target="_blank" href="https://facebook.com/{{ post['id'] }}">Posted</a> by <a target="_blank" href="https://facebook.com/{{ post['from']['id'] }}">{{ post["from"]["name"] }}</a> on {{ post["created_time"].split("T")[0] }}</p>
     </div>
 {% endmacro %}
 
@@ -37,7 +37,7 @@
 </div>
 
 <div id="busiest-hours" class="statbox">
-    <h2>Busiest Hours</h2>
+    <h2>Busiest Hours (comments + posts x 2)</h2>
     <canvas id="hours" width="1000"></canvas>
 </div>
 

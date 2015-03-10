@@ -1,10 +1,10 @@
-{% macro topUsers(name, count, icon) %}
+{% macro topUsers(name, count, icon, id) %}
     <div class="top-ten">
         <div class="count">
             <p>{{ count }}</p>
             <img src="{{ url_for('static', filename=icon) }}" />
         </div>
-        <h3 style="padding-top: 10px">{{ name }}</h3>
+        <h3 style="padding-top: 10px"><a target="_blank" href="https://facebook.com/{{ id }}">{{ name }}</a></h3>
     </div>
 {% endmacro %}
 
@@ -12,19 +12,19 @@
     <div id="top-posters" class="top-users">
         <h2>Top posters</h2>
         {% for user in stats.top_posters() %}
-            {{ topUsers(user.name, user.post_count, "post.png") }}
+            {{ topUsers(user.name, user.post_count, "post.png", user.id) }}
         {% endfor %}
     </div>
     <div id="top-commenters" class="top-users">
         <h2>Top commenters</h2>
         {% for user in stats.top_commenters() %}
-            {{ topUsers(user.name, user.comment_count, "comment.png") }}
+            {{ topUsers(user.name, user.comment_count, "comment.png", user.id) }}
         {% endfor %}
     </div>
     <div id="top-likes" class="top-users">
         <h2>Top likers</h2>
         {% for user in stats.top_likers() %}
-            {{ topUsers(user.name, user.like_count, "like.png") }}
+            {{ topUsers(user.name, user.like_count, "like.png", user.id) }}
         {% endfor %}
     </div>
 </div>
@@ -76,7 +76,7 @@
         
         for (var i = 0; i < l; i++) {
             $("#user-activities").append("<h3>" + posts[i].message + "</h3>");
-            $("#user-activities").append("<p>" + posts[i].date + "</p>");
+            $("#user-activities").append("<p><a target=\"_blank\" href=\"https://facebook.com/"+posts[i].id+"\">" + posts[i].date + "</a></p>");
         }
     }
     
@@ -88,7 +88,7 @@
         
         for (var i = 0; i < l; i++) {
             $("#user-activities").append("<h3>" + comments[i].message + "</h3>");
-            $("#user-activities").append("<p>" + comments[i].date + "</p>");
+            $("#user-activities").append("<p><a target=\"_blank\" href=\"https://facebook.com/"+comments[i].id+"\">" + comments[i].date + "</a></p>");
         }
     }
     
@@ -153,6 +153,7 @@
             posts: [
                 {% for post in stats.posts_by(user.id) %}
                     {
+                        id: "{{ post.id }}",
                         message: "{{ post.message|replace("\n", " ") }}",
                         date: "{{ post.created_time.split("T")[0] }}"
                     },
@@ -161,6 +162,7 @@
             comments: [
                 {% for comment in stats.comments_by(user.id) %}
                     {
+                        id: "{{ comment.id }}",
                         message: "{{ comment.message|replace("\n", " ") }}",
                         date: "{{ comment.created_time.split("T")[0] }}"
                     },

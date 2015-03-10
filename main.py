@@ -52,6 +52,10 @@ def getStats():
         return stats
 
 
+@app.route('/debugger')
+def debugger():
+    return render_template('debug.html')
+
 @app.route('/fetch', methods=['GET', 'POST'])
 def fetch():
     group_id = request.args['group_id']

@@ -1,5 +1,12 @@
 "use strict";
 
+$(function(){
+    $('body').on('keydown', '#token', function(e){
+        if (e.keyCode == '13')
+            listGroups($("#token").val());
+    });
+})
+
 function getFormData() {
     var group = $("input:radio:checked").val();
     var token = $("input[name='access_token']").val()
@@ -13,7 +20,7 @@ function getFormData() {
         alert("Please select a group");
         return false;
     }
-    else if (!token) {
+    else if (token.length == 0 || !token) {
         alert("Please insert an access token");
         return false;
     }
@@ -85,6 +92,9 @@ function changeTab(tab) {
 
 
 function listGroups(token, no_fade) {
+    if (token.length == 0) {
+        return false;
+    }
     var list = $("#group-list-form");
     
     // Gets the list of groups from Facebook

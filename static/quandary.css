@@ -108,7 +108,12 @@ h2 {
 #container h1 {
     font-size: 48px;    
 }
-
+#container a, #container a:visited {
+    color: black;
+}
+#container a:hover {
+    text-decoration: none;
+}
 /* Login */
 
 #login {
@@ -283,7 +288,7 @@ h2 {
 
 #cookie-notice {
     width: 100%;
-    position: absolute;
+    position: fixed;
     bottom: 0px;
     background-color: #3b5998;
     padding: 5px;

@@ -458,7 +458,7 @@ class FbScan:
     def liked_and_commented(self):
         return [post for post in self.posts if post['id'] in self.likes and post['id'] in self.comments]
 
-    def busiest_hours(self, item='', comment_value=1, post_value=4):
+    def busiest_hours(self, item='', comment_value=1, post_value=2):
         hours = {}
         for h in range(0, 24):
             hours[h] = 0
@@ -559,7 +559,7 @@ def run(group_id='', params={}, ignore_cache=False):
 
     output += '\n most liked posts = '
     output += '<ul>'
-    for post in ga.most_liked_posts():
+    for post in ga.most_liked_posts(10):
         output += '<li>{:} - <a target="_blank" href="https://facebook.com/{:}">{:}</a></li>'.format(post['like_count'], post['id'], post['id'])
     output += '</ul>'
 
