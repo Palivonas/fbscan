@@ -1,6 +1,8 @@
 import os
 from flask import Flask, request, jsonify, render_template
 import fb
+from rq import Queue
+from worker import conn
 
 app = Flask(__name__)
 app.debug = True
@@ -23,7 +25,13 @@ def fetch():
         del args['ignore_cache']
     else : ignore_cache = False;
     stats = fb.FbScan(group_id, args)
-    stats.load(ignore_cache)
+    if __name__ == '__main__':
+        stats.load(ignore_cache)
+    else:
+        try:
+            stats.load(ignore_cache)
+        except Exception as e:
+            return repr(e)
     
     if 'spitout' in args:
         del args['spitout']
@@ -36,11 +44,30 @@ def fetch():
         #return render_template('stats.html', stats=stats, fb=fb)
         return fb.run(group_id, args)
 
+@app.route('/clearcache')
+def clearcache():
+    ga = fb.FbScan(request.args['group_id'])
+    return repr(ga.clear_cache())
 
-@app.route('/workertest')
+@app.route('/dataready')
+def dataready():
+    if 'group_id' in request.args:
+        stats = fb.FbScan(request.args['group_id'])
+        return ['0', '1'][stats.has_cache()]
+    else:
+        return 'missing group_id'
+
+
+@app.route('/work')
+def work():
+    group_id = request.args['group_id']
+    args = singlify(request.args)
+    del args['group_id']
+    q = Queue(connection=conn)
+    return repr(q.enqueue(fb.work, group_id, args))
+
+@app.route('/wtest')
 def workertest():
-    from rq import Queue
-    from worker import conn
     import wtest
     q = Queue(connection=conn)
     result = q.enqueue(wtest.test, 'uuuu')

@@ -2,6 +2,8 @@ import urllib.parse
 import urllib.request
 import urllib.error
 import json
+import boto
+import boto.s3.connection
 import os
 import re
 import collections
@@ -22,7 +24,7 @@ class FbScanError(Exception):
 
 
 class FbScan:
-    def __init__(self, group_id, params=None, cache_folder='fb_cache'):
+    def __init__(self, group_id, params=None, cache_folder=None):
         """
         Sets up variables
         :return: None
@@ -31,6 +33,8 @@ class FbScan:
         if params is None:
             params = {}
         self.params = params
+        if cache_folder is None:
+            cache_folder = os.path.dirname(os.path.abspath(__file__)) + '/fb_cache'
         self.cache_folder = cache_folder
         if not os.path.exists(cache_folder):
             os.mkdir(cache_folder)
@@ -44,19 +48,36 @@ class FbScan:
         self.graph_url = 'https://graph.facebook.com/v2.2/'
         self.request_count = 0
         self.fetch_time = 0
+        self.start_time = 0
+        self.fetch_time_limit = 170
+
+        AWS_ACCESS_KEY_ID = 'AKIAIEGKZ4WV3MT6KRHA'
+        AWS_SECRET_ACCESS_KEY = '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'
+
+        bucket_name = 'fbscan_cache'
+        conn = boto.connect_s3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+        self.bucket = conn.create_bucket(bucket_name, location=boto.s3.connection.Location.DEFAULT)
 
     @property
     def cache_file(self):
         cache_id = self.group_id
-        return os.path.join(self.cache_folder, cache_id + '.json')
+        # return os.path.join(self.cache_folder, cache_id + '.json')
+        return cache_id + '.json'
 
+    def has_cache(self):
+        return self.bucket.get_key(self.cache_file) is not None
+
+    def clear_cache(self):
+        self.bucket.delete_key(self.cache_file)
     def load(self, ignore_cache=False):
         loaded = False
-        start_time = perf_counter()
-        if not ignore_cache and os.path.exists(self.cache_file):
-            cache_file = open(self.cache_file, 'r')
-            cache_content = cache_file.read()
-            cache_file.close()
+        self.start_time = perf_counter()
+        if not ignore_cache and self.has_cache():
+            # cache_file = open(self.cache_file, 'r')
+            # cache_content = cache_file.read()
+            # cache_file.close()
+            cache_key = self.bucket.get_key(self.cache_file)
+            cache_content = cache_key.get_contents_as_string().decode()
             cached = json.loads(cache_content)
             self.posts = cached['data']
             self.members = cached['members']
@@ -71,10 +92,13 @@ class FbScan:
                 'data': self.posts,
                 'members': self.members
             }
-            cache_file = open(self.cache_file, 'w+')
-            cache_file.write(json.dumps(cached))
-            cache_file.close()
-        self.fetch_time = perf_counter() - start_time
+            # cache_file = open(self.cache_file, 'w+')
+            # cache_file.write(json.dumps(cached))
+            # cache_file.close()
+            # print('Wrote to file ' + self.cache_file)
+            cache_key = self.bucket.new_key(self.cache_file)
+            cache_key.set_contents_from_string(json.dumps(cached))
+        self.fetch_time = perf_counter() - self.start_time
         for member in self.members:
             self.members_dict[member['id']] = member
         self.separate()
@@ -82,6 +106,11 @@ class FbScan:
         self.basic_count()
 
     def fetch(self, url=None, paged=False, container=None, limit=0):
+
+        if perf_counter() - self.start_time > self.fetch_time_limit:
+            print('Timeout is nearing, ending fetch prematurely')
+            return {'paging': {}, 'data': []}
+
         if url is None:
             url = self.graph_url + self.group_id + '/feed?' + urllib.parse.urlencode(self.params)
             if 'limit' in self.params and int(self.params['limit']) > 0:
@@ -89,7 +118,7 @@ class FbScan:
             else:
                 limit = 50
 
-        print('--------------\n\n'+url+'\n\n--------------')
+        print('--------------\n'+url+'\n--------------')
         self.url_fetched = url
         try:
             response = urllib.request.urlopen(url).read().decode()
@@ -103,6 +132,9 @@ class FbScan:
                     content['paging'] = []
             under_limit = limit == 0 or len(content['data']) < limit
             while paged and under_limit and 'next' in content['paging']:
+                if perf_counter() - self.start_time > self.fetch_time_limit:
+                    print('Timeout is nearing, ending fetch prematurely')
+                    return {'paging': {}, 'data': []}
                 next_url = content['paging']['next']
                 del content['paging']['next']
                 print('--------------\n\n'+next_url+'\n\n--------------')
@@ -450,6 +482,11 @@ class FbScan:
     def comment_likes_count(self):
         return sum(comment['like_count'] for comment in self.flat_comments)
 
+def work(group_id='', params={}):
+    ga = FbScan(group_id, params)
+    ga.clear_cache()
+    ga.load(ignore_cache=True)
+    return 'data fetched for group ' + group_id
 
 def run(group_id='', params={}, ignore_cache=False):
     output = ''
