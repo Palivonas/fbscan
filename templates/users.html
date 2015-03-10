@@ -96,6 +96,10 @@
     $("#search").on("input", function() {
         $("#search .results").empty();
         
+        if ($("#pattern").val().length == 0) {
+            return false;
+        }
+        
         var reg = new RegExp($("#pattern").val(), "i");
         var l = names.length;
         

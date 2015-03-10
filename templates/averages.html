@@ -49,8 +49,8 @@
             <div class="legend-color" style="background-color:{{color}}"></div><p>{{ label + ": " + ( stat * 100 / stats.post_count)|round|int|string + "%" }}</p>
         {% endmacro %}
         {{ average(stats.liked_and_commented|length, "Liked and commented", "rgb(95,147,57)") }}
-        {{ average(stats.liked_or_commented|length - stats.commented_posts|length, "Only commented", "rgb(70,191,189)") }}
-        {{ average(stats.liked_or_commented|length - stats.liked_posts|length, "Only liked", "rgb(253,180,92)") }}
+        {{ average(stats.liked_or_commented|length - stats.liked_posts|length, "Only commented", "rgb(70,191,189)") }}
+        {{ average(stats.liked_or_commented|length - stats.commented_posts|length, "Only liked", "rgb(253,180,92)") }}
         {{ average(stats.post_count - stats.liked_or_commented|length, "Ignored", "rgb(224,44,44)") }}
     </div>
 </div>
