@@ -48,6 +48,8 @@ class FbScan:
         self.graph_url = 'https://graph.facebook.com/v2.2/'
         self.request_count = 0
         self.fetch_time = 0
+        self.start_time = 0
+        self.fetch_time_limit = 170
 
         AWS_ACCESS_KEY_ID = 'AKIAIEGKZ4WV3MT6KRHA'
         AWS_SECRET_ACCESS_KEY = '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'
@@ -69,7 +71,7 @@ class FbScan:
         self.bucket.delete_key(self.cache_file)
     def load(self, ignore_cache=False):
         loaded = False
-        start_time = perf_counter()
+        self.start_time = perf_counter()
         if not ignore_cache and self.has_cache():
             # cache_file = open(self.cache_file, 'r')
             # cache_content = cache_file.read()
@@ -96,7 +98,7 @@ class FbScan:
             # print('Wrote to file ' + self.cache_file)
             cache_key = self.bucket.new_key(self.cache_file)
             cache_key.set_contents_from_string(json.dumps(cached))
-        self.fetch_time = perf_counter() - start_time
+        self.fetch_time = perf_counter() - self.start_time
         for member in self.members:
             self.members_dict[member['id']] = member
         self.separate()
@@ -104,6 +106,11 @@ class FbScan:
         self.basic_count()
 
     def fetch(self, url=None, paged=False, container=None, limit=0):
+
+        if perf_counter() - self.start_time > self.fetch_time_limit:
+            print('Timeout is nearing, ending fetch prematurely')
+            return {'paging': {}, 'data': []}
+
         if url is None:
             url = self.graph_url + self.group_id + '/feed?' + urllib.parse.urlencode(self.params)
             if 'limit' in self.params and int(self.params['limit']) > 0:
@@ -125,6 +132,9 @@ class FbScan:
                     content['paging'] = []
             under_limit = limit == 0 or len(content['data']) < limit
             while paged and under_limit and 'next' in content['paging']:
+                if perf_counter() - self.start_time > self.fetch_time_limit:
+                    print('Timeout is nearing, ending fetch prematurely')
+                    return {'paging': {}, 'data': []}
                 next_url = content['paging']['next']
                 del content['paging']['next']
                 print('--------------\n\n'+next_url+'\n\n--------------')

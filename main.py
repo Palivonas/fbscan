@@ -25,7 +25,13 @@ def fetch():
         del args['ignore_cache']
     else : ignore_cache = False;
     stats = fb.FbScan(group_id, args)
-    stats.load(ignore_cache)
+    if __name__ == '__main__':
+        stats.load(ignore_cache)
+    else:
+        try:
+            stats.load(ignore_cache)
+        except Exception as e:
+            return repr(e)
     
     if 'spitout' in args:
         del args['spitout']
