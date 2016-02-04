@@ -74,10 +74,11 @@ class FbScan:
         return self.bucket.get_key(self.cache_file) is not None
 
     def clear_cache(self):
-        self.bucket.delete_key(self.cache_file)
+        return self.bucket.delete_key(self.cache_file)
     def load(self, ignore_cache=False):
         loaded = False
         self.start_time = perf_counter()
+        ignore_cache = True
         if not ignore_cache and self.has_cache():
             # cache_file = open(self.cache_file, 'r')
             # cache_content = cache_file.read()
@@ -126,6 +127,7 @@ class FbScan:
         print('--------------\n'+url+'\n--------------')
         self.url_fetched = url
         try:
+            # print("Fetching ", url)
             response = urllib.request.urlopen(url).read().decode()
             self.request_count += 1
             content = json.loads(response)
