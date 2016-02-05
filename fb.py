@@ -52,12 +52,11 @@ class FbScan:
         self.start_time = 0
         self.fetch_time_limit = 170
 
-        AWS_ACCESS_KEY_ID = base64.b64decode('QUtJQUlaNkhHSlo3QVZGVEtLWlE=').decode()
-        AWS_SECRET_ACCESS_KEY = base64.b64decode('cUUxUjkwdERmWFRzZVJBU3k1bTcyaVQ3clpHZVdpUmxLZk5HM2RxOQ==').decode()
+        # TODO: use enviroment variables
+        AWS_ACCESS_KEY_ID = base64.b64decode('aws_key_id_here').decode()
+        AWS_SECRET_ACCESS_KEY = base64.b64decode('aws_key_access_key_here').decode()
 
         bucket_name = 'fbscan_cache'
-        if str(__file__).startswith('/Users/Andrius'):
-            bucket_name = 'fbscan_cache_debug'
         conn = boto.connect_s3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
         try:
             self.bucket = conn.get_bucket(bucket_name)
